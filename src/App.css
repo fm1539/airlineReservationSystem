@@ -36,3 +36,17 @@
     transform: rotate(360deg);
   }
 }
+
+#collasible-nav-dropdown{
+  color: rgba(255,255,255,.5);
+}
+
+#collasible-nav-dropdown:hover{
+  color: white;
+}
+
+.search-flights-div{
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+} 
