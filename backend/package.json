@@ -9,6 +9,7 @@
   "author": "farhan isfar nur",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.0"
+    "body-parser": "^1.19.0",
+    "mysql": "^2.18.1"
   }
 }
