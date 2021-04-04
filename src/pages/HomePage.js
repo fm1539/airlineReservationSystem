@@ -7,12 +7,41 @@ function HomePage(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
+    const [login, setLogin] = useState(true)
+
+    const [loginEvent, setLoginEvent] = useState({
+        email: "",
+        password: ""
+    })
+
+    const loginChangeHandler = (event) => {
+        setLoginEvent({
+            ...loginEvent, 
+            [event.target.name]: event.target.value
+        })
+    }
+
+    const loginButtonHandler = () => {
+        console.log(loginEvent)
+        axios.post('http://localhost:8000/api/customer/login', loginEvent).then( response => {
+            console.log(response.data);
+            if (response.data.status === "logged"){
+                console.log(response.data.userObj);
+                localStorage.setItem('userObj', JSON.stringify(response.data.userObj))
+                window.location = '/messages'
+            }
+            else{
+                alert('Username or password is incorrect. Please try again')
+            }
+        }
+        )
+    }
+
     const [registerEvent, setRegisterEvent] = useState({
         email: "", name: "", password: "", building_number: "",
         street: "", city: "", state: "", passport_number: "", phone_number: "",
         passport_expiration: "", passport_country: "", date_of_birth: ""
     })
-    
 
     const registerChangeHandler = (event) => {
         setRegisterEvent({
@@ -24,18 +53,10 @@ function HomePage(){
     const registerButtonHandler = () => {
         console.log(registerEvent)
         axios.post('http://localhost:8000/api/customer/register', registerEvent).then( response => {
-            if (response.data.status === "registered"){
-                window.location = '/'
-            }
-            else{
-                alert('Username or Email already exists')
-            }
+            if (response.data.status === "registered") window.location = '/'
+            else alert('Username or Email already exists')
         }
-    )
-        // window.location = '/'
-    }
-
-    
+    )}
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -54,13 +75,23 @@ function HomePage(){
                 <Modal.Title>Sign In</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    Woohoo, you're reading this text in a modal!
+                    <form>
+                        <label>Email</label>
+                        <br/>
+                        <input type="email" name="email" placeholder="Email" onChange={loginChangeHandler} autocomplete="chrome-off" required/>
+                        <br/>
+                        <br/>
+                        <label>Password</label>
+                        <br/>
+                        <input type="password" name="password" placeholder="Password" onChange={loginChangeHandler} autocomplete="chrome-off" required/>
+                        <br /><br />
+                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
                     Close
                 </Button>
-                <Button variant="primary" onClick={handleClose}>
+                <Button variant="primary" onClick={loginButtonHandler}>
                     Sign In
                 </Button>
                 </Modal.Footer>
@@ -130,13 +161,13 @@ function HomePage(){
                         <br/>
                         <input type="password" name="password" placeholder="Password" onChange={registerChangeHandler} required/>
                         <br /><br />
-                        <button type="button" className="lg" onClick={registerButtonHandler}>Register</button>                    </form>
+                    </form>
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose2}>
                     Close
                 </Button>
-                <Button variant="primary" onClick={handleClose2}>
+                <Button variant="primary" onClick={registerButtonHandler}>
                     Sign Up
                 </Button>
                 </Modal.Footer>

@@ -39,36 +39,45 @@ connection.connect();
 // })
 
 app.post('/api/customer/register', function(req, res){
-    console.log(req.body.email);
     
     var arr = [req.body.email,req.body.name,req.body.password,req.body.building_number,req.body.street,req.body.city,req.body.state,
         req.body.phone_number,req.body.passport_number,req.body.passport_expiration,req.body.passport_country,req.body.date_of_birth]
     let dynamic = ''
     arr.forEach((element, index) => {
         if (index == arr.length-1){
-            dynamic += element
+            dynamic +=  "'" + element + "'"
         } else{
-            dynamic += element + ','
+            dynamic += "'" + element + "',"
         }
 });
 
-    const begin = 'INSERT INTO `Customer` (`email`,`name`,`password`,`building_number`,`street`,`city`,`state`,`phone_number`,`passport_number`,`passport_expiration`,`passport_country`,`date_of_birth`)'
-    
-    connection.query(begin + ' VALUES (' + dynamic + ')', function (err, results, fields){
-        if (err) throw err;
-        res.json({'status': 'registered'})
+    const begin = "INSERT INTO `Customer` (`email`,`name`,`password`,`building_number`,`street`,`city`,`state`,`phone_number`,`passport_number`,`passport_expiration`,`passport_country`,`date_of_birth`)"
+    connection.query(begin + " VALUES (" + dynamic + ")", function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else res.json({'status': 'registered'})  
     })
-    res.json({'status': 'invalid'})
 })
 
+app.post('/api/customer/login', function(req, res){
+    email = req.body.email
+    password = req.body.password
+});
+    connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
 
+        if (results.length){    //if non empty result
+            res.json({'status': 'loggedin'})
+        }
+        else{       // empty result
+            res.json({'status': 'invalid'})  
+        }
+    })
+})
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
     console.log(req.params.airLineID)               //this prints the users parameter
     const airLineName = req.params.airLineID
-    const obj = {
-        airLineName: database[airLineName]
-    }
+    const obj = { airLineName: database[airLineName] }
     res.json(obj)                  
     //res.send(req.params.airLineID)   //prints the user's parameter to their browser //res is "resposne you want to send back"
 })
