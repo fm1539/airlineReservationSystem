@@ -1,13 +1,14 @@
-import React, {useState} from 'react'
+import React, {useState, useContext} from 'react'
 import NavBar from '../shared/NavBar'
 import axios from 'axios'
+import {Context} from '../global/Store'
 import {InputGroup, FormControl, Modal, Button} from 'react-bootstrap'
 
 function HomePage(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
-    const [login, setLogin] = useState(true)
+    const [state, dispatch] = useContext(Context)
 
     const [loginEvent, setLoginEvent] = useState({
         email: "",
@@ -23,18 +24,7 @@ function HomePage(){
 
     const loginButtonHandler = () => {
         console.log(loginEvent)
-        axios.post('http://localhost:8000/api/customer/login', loginEvent).then( response => {
-            console.log(response.data);
-            if (response.data.status === "logged"){
-                console.log(response.data.userObj);
-                localStorage.setItem('userObj', JSON.stringify(response.data.userObj))
-                window.location = '/messages'
-            }
-            else{
-                alert('Username or password is incorrect. Please try again')
-            }
-        }
-        )
+        dispatch({type: 'customerLogin', payload: loginEvent})
     }
 
     const [registerEvent, setRegisterEvent] = useState({
@@ -63,6 +53,16 @@ function HomePage(){
 
     const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
+
+    let custInfo = <p>Loading...</p>
+
+    if (state.error){
+        custInfo = <p>Something went wrong: <span>{state.error}</span></p>
+    }
+
+    if (!state.error && state.custObj){
+        custInfo = <p>{state.custObj.email}</p>
+    }
 
     return (
         <React.Fragment>
@@ -199,6 +199,9 @@ function HomePage(){
                 </div>
                 <label>Departure Date: </label>
                 <input type="date"/>
+                {custInfo}
+                <button onClick={() => {dispatch({type: 'example'})}}></button>
+                <button onClick={() => {console.log(state)}}></button>
             </div>
         </React.Fragment>
     )
