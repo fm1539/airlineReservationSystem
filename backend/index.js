@@ -61,15 +61,19 @@ app.post('/api/customer/register', function(req, res){
 app.post('/api/customer/login', function(req, res){
     email = req.body.email
     password = req.body.password
-});
+
     connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
-        if (err) res.json({'status': 'invalid'})
+        if (err) res.json({'status': 'invaliderr'})
 
         if (results.length){    //if non empty result
-            res.json({'status': 'loggedin'})
+            console.log(results[0].email);
+            const custObj = {
+                'email': results[0].email
+            }
+            res.json({'status': 'logged', 'custObj': custObj})
         }
         else{       // empty result
-            res.json({'status': 'invalid'})  
+            res.json({'status': 'invalidempty'})  
         }
     })
 })
