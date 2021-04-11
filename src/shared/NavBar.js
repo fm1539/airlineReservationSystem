@@ -14,11 +14,14 @@ function NavBar(props){ //props = {nav: [[link, title]], accountManagement: [sig
                     )
                 })}
             </Nav>
+            {props.loggedIn ? <Nav.Link onClick={props.logOut}>Logout</Nav.Link>
+            :
             <NavDropdown title="Sign In/Up" id="collasible-nav-dropdown" style={{'color': 'white'}}>
                 <NavDropdown.Item onClick={props.accountManagement[0]}>Sign In</NavDropdown.Item>
                 <NavDropdown.Divider />
                 <NavDropdown.Item onClick={props.accountManagement[1]}>Sign Up</NavDropdown.Item>
-            </NavDropdown>
+            </NavDropdown> 
+            }
         </Navbar.Collapse>
         </Navbar>
     )

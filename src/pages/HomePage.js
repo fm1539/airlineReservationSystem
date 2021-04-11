@@ -1,14 +1,12 @@
-import React, {useState, useContext} from 'react'
+import React, {useState} from 'react'
 import NavBar from '../shared/NavBar'
 import axios from 'axios'
-import {Context} from '../global/Store'
-import {InputGroup, FormControl, Modal, Button} from 'react-bootstrap'
+import {InputGroup, FormControl, Modal, Button, Card} from 'react-bootstrap'
+import {login, logout, checkLoggedIn} from '../global/Reducer'
 
 function HomePage(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
-
-    const [state, dispatch] = useContext(Context)
 
     const [loginEvent, setLoginEvent] = useState({
         email: "",
@@ -24,7 +22,7 @@ function HomePage(){
 
     const loginButtonHandler = () => {
         console.log(loginEvent)
-        dispatch({type: 'customerLogin', payload: loginEvent})
+        login(loginEvent)
     }
 
     const [registerEvent, setRegisterEvent] = useState({
@@ -56,19 +54,31 @@ function HomePage(){
 
     let custInfo = <p>Loading...</p>
 
-    if (state.error){
-        custInfo = <p>Something went wrong: <span>{state.error}</span></p>
-    }
+    // if (state.error){
+    //     custInfo = <p>Something went wrong: <span>{state.error}</span></p>
+    // }
 
-    if (!state.error && state.custObj){
-        custInfo = <p>{state.custObj.email}</p>
+    // if (!state.error && state.custObj){
+    //     custInfo = <p>{state.custObj.email}</p>
+    // }
+
+    // let loggedIn = false
+    // if (!isEmpty(state.custObj)){
+    //     loggedIn = true
+    // }
+
+    let loggedIn = false
+    if (checkLoggedIn()){
+        loggedIn = true
     }
 
     return (
         <React.Fragment>
             <NavBar 
-                nav={[['/', 'Features'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/viewFlights', 'View My Flights'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
+                loggedIn = {loggedIn}
+                logOut = {logout}
             />
             <Modal centered show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
@@ -173,35 +183,39 @@ function HomePage(){
                 </Modal.Footer>
             </Modal>
             <div className="search-flights-div">
-                <h1>Search Flights</h1>
-                <div style={{'display': 'flex'}}>
-                    <InputGroup className="mb-3" style={{'width': '50%'}}>
-                        <InputGroup.Prepend>
-                            <InputGroup.Text id="basic-addon1">Leaving</InputGroup.Text>
-                        </InputGroup.Prepend>
-                        <FormControl
-                        placeholder="From"
-                        aria-label="Username"
-                        aria-describedby="basic-addon1"
-                        />
-                    </InputGroup>
-                    <div style={{'width': '10px'}}> </div>
-                    <InputGroup className="mb-3" style={{'width': '50%'}}>
-                        <InputGroup.Prepend>
-                            <InputGroup.Text id="basic-addon1">Going</InputGroup.Text>
-                        </InputGroup.Prepend>
-                        <FormControl
-                        placeholder="To"
-                        aria-label="Username"
-                        aria-describedby="basic-addon1"
-                        />
-                    </InputGroup>
-                </div>
-                <label>Departure Date: </label>
-                <input type="date"/>
-                {custInfo}
-                <button onClick={() => {dispatch({type: 'example'})}}></button>
-                <button onClick={() => {console.log(state)}}></button>
+            <Card>
+                    <Card.Body>
+                        <Card.Title style={{'textAlign': 'left'}}>Search Flights</Card.Title>
+                        <div style={{'display': 'flex'}}>
+                            <InputGroup className="mb-3" style={{'width': '50%'}}>
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text id="basic-addon1">Leaving</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                placeholder="From"
+                                aria-label="Username"
+                                aria-describedby="basic-addon1"
+                                />
+                            </InputGroup>
+                            <div style={{'width': '10px'}}> </div>
+                            <InputGroup className="mb-3" style={{'width': '50%'}}>
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text id="basic-addon1">Going</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                placeholder="To"
+                                aria-label="Username"
+                                aria-describedby="basic-addon1"
+                                />
+                            </InputGroup>
+                        </div>
+                        <br/>
+                        <label>Departure Date: </label>
+                        <br/>
+                        <input type="date"/> <br/><br/>
+                        <Button>Search</Button>
+                    </Card.Body>
+                </Card>
             </div>
         </React.Fragment>
     )

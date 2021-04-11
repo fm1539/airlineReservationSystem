@@ -20,10 +20,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-  host     : 'bht5nlo6upctnbmxntso-mysql.services.clever-cloud.com',
-  user     : 'uzvcitr36qb3fwiw',
-  password : 'gnm9ZRsUBFPCoy95Edkn',
-  database : 'bht5nlo6upctnbmxntso'
+  host     : 'bhvnh1znohtkeluykr2r-mysql.services.clever-cloud.com',
+  user     : 'ubsbqvfcyngpgwfb',
+  password : 'JGwD07olU9zwGKAWnliE',
+  database : 'bhvnh1znohtkeluykr2r'
 });
 
 connection.connect();
@@ -74,6 +74,37 @@ app.post('/api/customer/login', function(req, res){
         }
         else{       // empty result
             res.json({'status': 'invalidempty'})  
+        }
+    })
+})
+
+app.post('/api/customer/:custEmail/viewFlights', function(req, res){
+    const email = req.params.custEmail
+    const today = new Date();
+    const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    const a = "with futureDates(ticketID, airline_name, flight_number, depart_date, depart_time) as( "
+    const b = "SELECT ticketID, airline_name, flight_number, depart_date, depart_time "
+    const c = "FROM Agent_Purchases "
+    const d = "WHERE " + "'"+email+"'"+ " = customer_email and depart_date >= "+"'"+date+"' "
+    const e = "UNION SELECT ticketID, airline_name, flight_number, depart_date, depart_time "
+    const f = "WHERE " + "'"+email+"'"+ " = customer_email and depart_date >= "+"'"+date+"' "
+    const g = ")Select * from futureDates WHERE  ticketID NOT IN (SELECT ticketID "
+    const h = "FROM futureDates"
+    const i = "WHERE depart_date = "+"'"+date+"'"+" and depart_time < "+"'"+time+"' ) "
+    connection.query(a+b+c+d+e+f+g+h+i, function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        if (results.length){ //non empty result
+            const futureFlightObj = {
+                email: email,
+                test1: date,
+                test2: time,
+                results
+            }
+            res.json(futureFlightObj)
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})
         }
     })
 })
