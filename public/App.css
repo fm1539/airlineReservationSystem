@@ -1,0 +1,79 @@
+.App {
+  text-align: center;
+  /* background-color: silver; */
+}
+body {
+  background-color: 	#F0F0F0 !important;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#collasible-nav-dropdown{
+  color: rgba(255,255,255,.5);
+}
+
+#collasible-nav-dropdown:hover{
+  color: white;
+}
+
+.search-flights-div{
+  padding-top: 10vh;
+  padding-bottom: 10vh;
+  background-image: url("./wall3.jpeg") !important;
+  background-color: #cccccc;
+  background-repeat: round;
+} 
+
+.logo {
+  width: 100%;
+  transform: skew(20deg);
+  position: relative;
+  animation: move 2s infinite;
+}
+
+@keyframes move {
+  0% {box-shadow: 0; left: 0; bottom: 0;}
+  10% {box-shadow: -10px 2px 2px 1px black; left: 2px; bottom: 2px;}
+  20% {box-shadow: -10px 4px 4px 1px black; left: 4px; bottom: 4px;}
+  30% {box-shadow: -10px 6px 6px 1px black; left: 6px; bottom: 6px;}
+  40% {box-shadow: -10px 8px 8px 1px black; left: 8px; bottom: 8px;}
+  /* 50% {box-shadow: 0; top: 10px; bottom: 10px;} */
+  60% {box-shadow: -10px 8px 8px 1px black; left: 8px; bottom: 8px;}
+  70% {box-shadow: -10px 6px 6px 1px black; left: 6px; bottom: 6px;}
+  80% {box-shadow: -10px 4px 4px 1px black; left: 4px; bottom: 4px;}
+  90% {box-shadow: -10px 2px 2px 1px black; left: 2px; bottom: 2px;}
+  100% {box-shadow: 0; left: 0; bottom: 0;}
+}

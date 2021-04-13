@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import NavBar from '../shared/NavBar'
 import axios from 'axios'
-import {InputGroup, FormControl, Modal, Button, Card} from 'react-bootstrap'
+import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col} from 'react-bootstrap'
 import {login, logout, checkLoggedIn} from '../global/Reducer'
 
 function HomePage(){
@@ -209,7 +209,8 @@ function HomePage(){
                 </Modal.Footer>
             </Modal>
             <div className="search-flights-div">
-            <Card>
+                <h1 style={{color: 'white'}}>Only One Question. Where to?</h1>
+            <Card style={{boxShadow: '0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%)', width:'50%', marginLeft: 'auto', marginRight: 'auto'}}>
                     <Card.Body>
                         <Card.Title style={{'textAlign': 'left'}}>Search Flights</Card.Title>
                         <div style={{'display': 'flex'}}>
@@ -243,6 +244,44 @@ function HomePage(){
                     </Card.Body>
                 </Card>
             </div>
+            <h1 style={{marginTop:'20px'}}>Some of our Reviews</h1>
+            <Container style={{marginTop: '20px'}}>
+                <Row md={3}>
+                    <Col xs>
+                        <Card border="success" style={{ borderRadius: '20px' }}>
+                            <Card.Header>John Doe</Card.Header>
+                            <Card.Body>
+                            <Card.Title>Great!</Card.Title>
+                            <Card.Text>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                            </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs>
+                        <Card border="success" style={{borderRadius: '20px' }}>
+                            <Card.Header>Sarah Connor</Card.Header>
+                            <Card.Body>
+                            <Card.Title>Exquisite</Card.Title>
+                            <Card.Text>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                            </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs>
+                    <Card border="success" style={{ borderRadius: '20px' }}>
+                            <Card.Header>Tony Stark</Card.Header>
+                            <Card.Body>
+                            <Card.Title>Suited Me</Card.Title>
+                            <Card.Text>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                            </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+            </Container>
         </React.Fragment>
     )
 }
