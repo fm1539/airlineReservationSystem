@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import NavBar from '../shared/NavBar'
 import axios from 'axios'
 import {InputGroup, FormControl, Modal, Button, Card} from 'react-bootstrap'
@@ -8,10 +8,36 @@ function HomePage(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
+    const [cities, setCities] = useState([])
+    const [airports, setAirports] = useState([])
+
     const [loginEvent, setLoginEvent] = useState({
         email: "",
         password: ""
     })
+
+    useEffect(()=> {
+        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => {
+            console.log(response.data.results);
+            airportHandler(response.data.results)
+        })
+
+        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => {
+            console.log(response.data);
+            cityHandler(response.data.results)
+        })
+
+    }, [])
+
+    
+
+    const cityHandler =(arr) => {
+        setCities(arr)
+    }
+
+    const airportHandler = (arr) => {
+        setAirports(arr)
+    }
 
     const loginChangeHandler = (event) => {
         setLoginEvent({
@@ -213,7 +239,7 @@ function HomePage(){
                         <label>Departure Date: </label>
                         <br/>
                         <input type="date"/> <br/><br/>
-                        <Button>Search</Button>
+                        <Button onClick={() => {console.log(airports); console.log(cities);}}>Search</Button>
                     </Card.Body>
                 </Card>
             </div>

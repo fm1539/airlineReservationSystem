@@ -1,7 +1,6 @@
 import axios from 'axios'
 
 async function login(custObj, path) {
-    console.log('hello');
     const response = await axios.post('http://localhost:8000/api/customer/login', custObj)
     // axios.post('http://localhost:8000/api/customer/login', custObj).then(response => {
     //     console.log(response);

@@ -1,8 +1,16 @@
-import './App.css';
 import Button from 'react-bootstrap/Button';
 import {BrowserRouter as Router} from 'react-router-dom'
 import {Route, Switch, Redirect} from 'react-router-dom'
 import HomePage from './pages/HomePage'
+import ViewFlights from './pages/ViewFlights'
+
+
+<Route path="/" exact>
+          {JSON.parse(localStorage.getItem('userObj')) ?
+          <Redirect to="/messages" /> :
+          <HomePage />
+          } 
+        </Route>
 
 function App() {
   return (
@@ -11,6 +19,12 @@ function App() {
         <Switch>
           <Route path='/' exact>
             <HomePage />
+          </Route>
+          <Route path='/viewFlights' exact>
+            {JSON.parse(localStorage.getItem('custObj')) ?
+            <ViewFlights /> :
+            <Redirect to="/" />
+            }
           </Route>
         </Switch>
       </Router>

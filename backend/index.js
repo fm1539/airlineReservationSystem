@@ -19,6 +19,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 var mysql = require('mysql');
+
 var connection = mysql.createConnection({
   host     : 'bhvnh1znohtkeluykr2r-mysql.services.clever-cloud.com',
   user     : 'ubsbqvfcyngpgwfb',
@@ -78,30 +79,107 @@ app.post('/api/customer/login', function(req, res){
     })
 })
 
-app.post('/api/customer/:custEmail/viewFlights', function(req, res){
+app.get('/api/customer/:custEmail/viewFlights', function(req, res){
     const email = req.params.custEmail
     const today = new Date();
     const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-    const a = "with futureDates(ticketID, airline_name, flight_number, depart_date, depart_time) as( "
-    const b = "SELECT ticketID, airline_name, flight_number, depart_date, depart_time "
-    const c = "FROM Agent_Purchases "
-    const d = "WHERE " + "'"+email+"'"+ " = customer_email and depart_date >= "+"'"+date+"' "
-    const e = "UNION SELECT ticketID, airline_name, flight_number, depart_date, depart_time "
-    const f = "WHERE " + "'"+email+"'"+ " = customer_email and depart_date >= "+"'"+date+"' "
-    const g = ")Select * from futureDates WHERE  ticketID NOT IN (SELECT ticketID "
-    const h = "FROM futureDates"
-    const i = "WHERE depart_date = "+"'"+date+"'"+" and depart_time < "+"'"+time+"' ) "
-    connection.query(a+b+c+d+e+f+g+h+i, function (err, results, fields){
+    connection.query(`
+    with futureDates(ticketID, airline_name, flight_number, depart_date, depart_time) as
+    ( 
+    SELECT ticketID, airline_name, flight_number, depart_date, depart_time 
+    FROM Agent_Purchases WHERE ? = customer_email and depart_date >= ? 
+    UNION SELECT ticketID, airline_name, flight_number, depart_date, depart_time 
+    FROM Customer_Purchases WHERE ? = customer_email and depart_date >= ? 
+    ) 
+    SELECT * from futureDates NATURAL JOIN Flight WHERE ticketID NOT IN (SELECT ticketID 
+                                                                    FROM futureDates 
+                                                                    WHERE depart_date = ? and depart_time < ?)
+    `, [req.params.custEmail, date, req.params.custEmail, date, date, time] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
             const futureFlightObj = {
                 email: email,
-                test1: date,
-                test2: time,
                 results
             }
-            res.json(futureFlightObj)
+            res.json({
+                'status': 'success',
+                'futureFlightObj': futureFlightObj
+            })
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})
+        }
+    })
+})
+
+app.get('/api/customer/getAllAirports', function (req, res){
+    connection.query(`SELECT name FROM Airport`,
+    function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        if (results.length){
+            let arr = []
+            results.forEach(element => {
+                arr.push(element.name)
+            });
+            res.json({
+                'status': 'success',
+                'results': arr
+            })
+        }
+        else{
+            res.json({'status': 'no_airports'})
+        }
+    })
+})
+
+app.get('/api/customer/getAllCities', function (req, res){
+    connection.query(`SELECT city FROM Airport`,
+    function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        if (results.length){
+            console.log(results);
+            let arr = []
+            results.forEach(element => {
+                arr.push(element.city)
+            });
+            res.json({
+                'status': 'success',
+                'results': arr
+            })
+        }
+        else{
+            res.json({'status': 'no_airports'})
+        }
+    })
+})
+
+app.get('/api/customer/searchForFlights', function(req, res){
+    const sourceCity = req.query.sourceCity
+    const sourceAirport = req.query.sourceAirport
+    const destinationCity = req.query.destinationCity
+    const destinationAirport = req.query.destinationAirport
+    const departureDate = req.query.departureDate
+    const returnDate = req.query.returnDate
+
+    var arr = [sourceCity, sourceAirport, destinationCity, destinationAirport, departureDate, returnDate]
+    arr.forEach((element) => {
+        if (element = ''){
+            element = '%'
+        }
+    });
+
+    connection.query(``, [] ,function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        if (results.length){ //non empty result
+            const viewFlightsObj = {
+                email: email,
+                results
+            }
+            res.json({
+                'status': 'success',
+                'futureFlightObj': futureFlightObj
+            })
         }
         else{       // empty result
             res.json({'status': 'invalidempty'})
