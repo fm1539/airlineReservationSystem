@@ -52,7 +52,7 @@ body {
 .search-flights-div{
   padding-top: 10vh;
   padding-bottom: 10vh;
-  background-image: url("./wall3.jpeg") !important;
+  background-image: url("./wallpaper.jpeg") !important;
   background-color: #cccccc;
   background-repeat: round;
 } 
@@ -76,4 +76,8 @@ body {
   80% {box-shadow: -10px 4px 4px 1px black; left: 4px; bottom: 4px;}
   90% {box-shadow: -10px 2px 2px 1px black; left: 2px; bottom: 2px;}
   100% {box-shadow: 0; left: 0; bottom: 0;}
+}
+
+.table-hover{
+  background-color: gray;
 }

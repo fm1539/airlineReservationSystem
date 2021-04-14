@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react'
 import NavBar from '../shared/NavBar'
 import axios from 'axios'
 import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col} from 'react-bootstrap'
-import {login, logout, checkLoggedIn} from '../global/Reducer'
+import {login, logout, checkLoggedIn, register} from '../global/Reducer'
 
 function HomePage(){
     const [show, setShow] = useState(false);
@@ -16,6 +16,13 @@ function HomePage(){
         password: ""
     })
 
+    const [searchInput, setSearchInput] = useState({
+        leaving: "",
+        going: "",
+        depart_date: ""
+    }) 
+
+
     useEffect(()=> {
         axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => {
             console.log(response.data.results);
@@ -25,8 +32,7 @@ function HomePage(){
         axios.get('http://localhost:8000/api/customer/getAllCities').then( response => {
             console.log(response.data);
             cityHandler(response.data.results)
-        })
-
+        }) 
     }, [])
 
     
@@ -46,9 +52,40 @@ function HomePage(){
         })
     }
 
+    const searchChangeHandler = (event) => {
+        setSearchInput({
+            ...searchInput,
+            [event.target.name]: event.target.value
+        })
+    }
+
+    const searchButtonHandler = () => {
+        let obj = {
+            "sourceCity": "",
+            "sourceAirport": "",
+            "destinationCity": "",
+            "destinationAirport": "",
+            "departureDate": ""
+        }
+        if (cities.includes(searchInput.leaving)) obj["sourceCity"] = searchInput.leaving;
+        else if (airports.includes(searchInput.leaving)) obj["sourceAirport"] = searchInput.leaving;
+
+        if (cities.includes(searchInput.going)) obj["destinationCity"] = searchInput.going;
+        else if (airports.includes(searchInput.going)) obj["destinationAirport"] = searchInput.going;
+
+        let query = ""
+        
+        for (var key in obj){
+            if (obj[key] !== "")  query += key + "=" + obj[key] + '&'
+        }
+        query = query.slice(0, query.length-1)
+        
+        window.location = "/searchResults?" + query
+
+    }
+
     const loginButtonHandler = () => {
-        console.log(loginEvent)
-        login(loginEvent)
+        login(loginEvent, '/')
     }
 
     const [registerEvent, setRegisterEvent] = useState({
@@ -65,12 +102,8 @@ function HomePage(){
     }
 
     const registerButtonHandler = () => {
-        console.log(registerEvent)
-        axios.post('http://localhost:8000/api/customer/register', registerEvent).then( response => {
-            if (response.data.status === "registered") window.location = '/'
-            else alert('Username or Email already exists')
-        }
-    )}
+        register(registerEvent, '/')
+    }
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -100,12 +133,21 @@ function HomePage(){
 
     return (
         <React.Fragment>
-            <NavBar 
+            {loggedIn ? <NavBar 
                 nav={[['/viewFlights', 'View My Flights'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
             />
+            :
+            <NavBar 
+                nav={[['#pricing', 'Flight Tracker']]} 
+                accountManagement={[handleShow, handleShow2]}
+                loggedIn = {loggedIn}
+                logOut = {logout}
+            />
+        }
+            
             <Modal centered show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                 <Modal.Title>Sign In</Modal.Title>
@@ -221,6 +263,8 @@ function HomePage(){
                                 <FormControl
                                 placeholder="From"
                                 aria-label="Username"
+                                name="leaving"
+                                onChange={searchChangeHandler}
                                 aria-describedby="basic-addon1"
                                 />
                             </InputGroup>
@@ -232,15 +276,16 @@ function HomePage(){
                                 <FormControl
                                 placeholder="To"
                                 aria-label="Username"
+                                name="going" onChange={searchChangeHandler}
                                 aria-describedby="basic-addon1"
                                 />
                             </InputGroup>
                         </div>
                         <br/>
-                        <label>Departure Date: </label>
+                        <label for="depart_date">Departure Date: </label>
                         <br/>
-                        <input type="date"/> <br/><br/>
-                        <Button onClick={() => {console.log(airports); console.log(cities);}}>Search</Button>
+                        <input name="depart_date" type="date" onChange={searchChangeHandler}/> <br/><br/>
+                        <Button onClick={searchButtonHandler}>Search</Button>
                     </Card.Body>
                 </Card>
             </div>

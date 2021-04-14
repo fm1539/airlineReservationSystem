@@ -10,7 +10,15 @@ async function login(custObj, path) {
     //     }
     // })
     localStorage.setItem('custObj', JSON.stringify(response.data.custObj))
-    window.location = '/'
+    window.location = path
+}
+
+const register = (registerEvent, path) => {
+    axios.post('http://localhost:8000/api/customer/register', registerEvent).then( response => {
+            if (response.data.status === "registered") window.location = path
+            else alert('Username or Email already exists')
+        }
+    )
 }
 
 const checkLoggedIn = () => {
@@ -70,4 +78,4 @@ const logout = () => {
 //     }
 // };
 
-export {login, logout, checkLoggedIn}
+export {login, logout, checkLoggedIn, register}

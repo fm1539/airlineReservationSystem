@@ -1,5 +1,10 @@
 const express = require('express')  //import
 const bodyParser = require('body-parser')   //import
+require('dotenv').config()
+
+const stripeSecretKey = process.env.SECRETKEY 
+const stripePublicKey = process.env.PUBLISHABLEKEY
+const stripe = require ('stripe')(stripeSecretKey)
 
 const app = express()               // creating an instance of express
 
@@ -85,17 +90,15 @@ app.get('/api/customer/:custEmail/viewFlights', function(req, res){
     const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     connection.query(`
-    with futureDates(ticketID, airline_name, flight_number, depart_date, depart_time) as
+    with allPurchases(ticketID, airline_name, flight_number, depart_date, depart_time) as 
     ( 
     SELECT ticketID, airline_name, flight_number, depart_date, depart_time 
-    FROM Agent_Purchases WHERE ? = customer_email and depart_date >= ? 
+    FROM Agent_Purchases WHERE ? = customer_email 
     UNION SELECT ticketID, airline_name, flight_number, depart_date, depart_time 
-    FROM Customer_Purchases WHERE ? = customer_email and depart_date >= ? 
+    FROM Customer_Purchases WHERE ? = customer_email 
     ) 
-    SELECT * from futureDates NATURAL JOIN Flight WHERE ticketID NOT IN (SELECT ticketID 
-                                                                    FROM futureDates 
-                                                                    WHERE depart_date = ? and depart_time < ?)
-    `, [req.params.custEmail, date, req.params.custEmail, date, date, time] ,function (err, results, fields){
+    SELECT * from allPurchases natural join Flight
+    `, [email,email] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
             const futureFlightObj = {
@@ -155,30 +158,39 @@ app.get('/api/customer/getAllCities', function (req, res){
 })
 
 app.get('/api/customer/searchForFlights', function(req, res){
-    const sourceCity = req.query.sourceCity
-    const sourceAirport = req.query.sourceAirport
-    const destinationCity = req.query.destinationCity
-    const destinationAirport = req.query.destinationAirport
-    const departureDate = req.query.departureDate
-    const returnDate = req.query.returnDate
+    const obj ={
+        "sourceCity": req.query.sourceCity,
+        "sourceAirport": req.query.sourceAirport,
+        "destinationCity": req.query.destinationCity,
+        "destinationAirport": req.query.destinationAirport,
+        "departureDate": req.query.departureDate,
+        "returnDate": req.query.returnDate
+    }
 
-    var arr = [sourceCity, sourceAirport, destinationCity, destinationAirport, departureDate, returnDate]
-    arr.forEach((element) => {
-        if (element = ''){
-            element = '%'
+    for (var key in obj){
+        if (obj[key] === undefined){
+            obj[key] = '%'
         }
-    });
+    }
 
-    connection.query(``, [] ,function (err, results, fields){
+    console.log(obj);
+
+    // console.log(obj.sourceAirport)    
+    // console.log(obj.destinationAirport)   
+    // console.log(obj.departureDate)   
+    // console.log(obj.returnDate)   
+    connection.query(`
+    SELECT * from Flight NATURAL JOIN Ticket
+    WHERE depart_airport_name LIKE ? 
+    and arrive_airport_name LIKE ? 
+    and depart_date LIKE ? 
+    and arrive_date LIKE ?
+    `, [obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"]] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
-            const viewFlightsObj = {
-                email: email,
-                results
-            }
             res.json({
                 'status': 'success',
-                'futureFlightObj': futureFlightObj
+                'flightsArr': results
             })
         }
         else{       // empty result
