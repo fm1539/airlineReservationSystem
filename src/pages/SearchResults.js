@@ -98,7 +98,7 @@ function SearchResults(){
     const rowEvents = {
         onClick: (e, row, rowIndex) => {
           console.log(row);
-        //   window.location = '/purchase'+
+          window.location = '/purchase/'+row.airline_name+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price
         }
       };
 

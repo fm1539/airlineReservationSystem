@@ -5,7 +5,15 @@ import HomePage from './pages/HomePage'
 import SearchResults from './pages/SearchResults';
 import ViewFlights from './pages/ViewFlights'
 import CheckoutForm from './pages/Purchase'
-
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {loadStripe} from '@stripe/stripe-js';
+import {
+  CardElement,
+  Elements,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 
 <Route path="/" exact>
           {JSON.parse(localStorage.getItem('userObj')) ?
@@ -15,6 +23,7 @@ import CheckoutForm from './pages/Purchase'
         </Route>
 
 function App() {
+  const stripePromise = loadStripe("pk_test_51IPVGeE1OhnzAuXAmvR1DDLZqKBvBjGxwZVGO7y8Z7PGGiJdXsScgnYFfVrEgTjSiUQZAFsrKCAlOIylnkNuGyjA009HBZEEJF")
   return (
     <div className="App">
       <Router>
@@ -28,9 +37,9 @@ function App() {
             <Redirect to="/" />
             }
           </Route>
-          <Route path='/purchase' exact>
+          <Route path='/purchase/:airlineName/:flightNumber/:departDate/:departTime' exact>
           {JSON.parse(localStorage.getItem('custObj')) ?
-            <CheckoutForm /> :
+            <Elements stripe={stripePromise}><CheckoutForm /></Elements> :
             <Redirect to="/" />
           }
           </Route>

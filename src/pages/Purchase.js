@@ -1,10 +1,24 @@
-import {CardElement, useStripe, useElements} from '@stripe/react-stripe-js';
+import {useParams} from 'react-router-dom'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {Button} from 'react-bootstrap'
+import {loadStripe} from '@stripe/stripe-js';
+import {
+  CardElement,
+  Elements,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
+import axios from 'axios'
 
 const CheckoutForm = () => {
+  let {airlineName, flightNumber, departDate, departTime} = useParams()
+  console.log(flightNumber, departDate, departTime);
   const stripe = useStripe();
   const elements = useElements();
 
   const handleSubmit = async (event) => {
+    console.log(event);
     // Block native form submission.
     event.preventDefault();
 
@@ -30,16 +44,42 @@ const CheckoutForm = () => {
     } else {
       console.log('[PaymentMethod]', paymentMethod);
     }
+    let obj = {
+      airline_name: airlineName,
+      flight_number: flightNumber,
+      depart_date: departDate,
+      depart_time: departTime
+    }
+    axios.post('http://localhost:8000/api/customer/purchaseTickets', obj).then(response=>{
+      console.log(response.data.status);
+    })
+
   };
 
   return (
+    <div>
+        <section>
+          <div class="product">
+            <img
+              src="https://i.imgur.com/EHyR2nP.png"
+              alt="The cover of Stubborn Attachments"
+            />
+            <div class="description">
+              <h3>Stubborn Attachments</h3>
+              <h5>$20.00</h5>
+            </div>
+          </div>
+          
+        </section>
+
+
     <form onSubmit={handleSubmit}>
       <CardElement />
-      <button type="submit" disabled={!stripe}>
-        Pay
-      </button>
+      <button type="submit" id="checkout-button" disabled={!stripe}>Checkout</button>
     </form>
-  );
+    
+  </div>
+  )
 };
 
 export default CheckoutForm

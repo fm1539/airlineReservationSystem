@@ -1,4 +1,3 @@
-let TICKETID = 10;
 const express = require('express')  //import
 const bodyParser = require('body-parser')   //import
 require('dotenv').config()
@@ -68,34 +67,6 @@ app.post('/api/customer/register', function(req, res){
 app.post('/api/customer/login', function(req, res){
     email = req.body.email
     password = req.body.password
-
-    connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
-        if (err) res.json({'status': 'invaliderr'})
-
-        if (results.length){    //if non empty result
-            console.log(results[0].email);
-            const custObj = {
-                'email': results[0].email
-            }
-            res.json({'status': 'logged', 'custObj': custObj})
-        }
-        else{       // empty result
-            res.json({'status': 'invalidempty'})  
-        }
-    })
-})
-
-app.post('/api/customer/purchase', function(req, res){
-    email = req.body.email
-    password = req.body.password
-
-    let ticketID = 0
-
-    connection.query("", function (err, results, fields){
-        if (err) res.json({'status': 'invaliderr'})
-        ticketID = results.length + 1
-        }
-    })
 
     connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
@@ -236,6 +207,33 @@ and city LIKE ?
         else{       // empty result
             res.json({'status': 'invalidempty'})
         }
+    })
+})
+
+app.post('/api/customer/purchaseTickets', function(req, res){
+    email = req.body.email
+    airline_name = req.body.airline_name
+    flight_number = req.body.flight_number
+    depart_date = req.body.depart_date
+    depart_time = req.body.depart_time
+    let ticketID = 0
+    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        else{
+            let ticketID = results.length+1
+        }
+    })
+    connection.query(`INSERT INTO 'Ticket' ('ticketID', 'airline_name', 'flight_number', 'depart_date', 'depart_time') 
+    VALUES (?, ?, ?, ?, ?)
+    `, [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        else res.json({'status': 'insert1successful'}) 
+    })
+    connection.query(`INSERT INTO 'Customer_Purchases' ('ticketID', 'airline_name', 'flight_number', 'depart_date', 'depart_time','customer_email') 
+    VALUES (?, ?, ?, ?, ?, ?)
+    `, [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        else res.json({'status': 'insert2successful'}) 
     })
 })
 
