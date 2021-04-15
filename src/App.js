@@ -4,6 +4,7 @@ import {Route, Switch, Redirect} from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import SearchResults from './pages/SearchResults';
 import ViewFlights from './pages/ViewFlights'
+import CheckoutForm from './pages/Purchase'
 
 
 <Route path="/" exact>
@@ -26,6 +27,12 @@ function App() {
             <ViewFlights /> :
             <Redirect to="/" />
             }
+          </Route>
+          <Route path='/purchase' exact>
+          {JSON.parse(localStorage.getItem('custObj')) ?
+            <CheckoutForm /> :
+            <Redirect to="/" />
+          }
           </Route>
           <Route path='/searchResults'>
             <SearchResults />

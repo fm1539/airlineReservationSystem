@@ -97,7 +97,8 @@ function SearchResults(){
 
     const rowEvents = {
         onClick: (e, row, rowIndex) => {
-          console.log(e, row, rowIndex);
+          console.log(row);
+        //   window.location = '/purchase'+
         }
       };
 

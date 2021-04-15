@@ -1,3 +1,4 @@
+let TICKETID = 10;
 const express = require('express')  //import
 const bodyParser = require('body-parser')   //import
 require('dotenv').config()
@@ -67,6 +68,34 @@ app.post('/api/customer/register', function(req, res){
 app.post('/api/customer/login', function(req, res){
     email = req.body.email
     password = req.body.password
+
+    connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+
+        if (results.length){    //if non empty result
+            console.log(results[0].email);
+            const custObj = {
+                'email': results[0].email
+            }
+            res.json({'status': 'logged', 'custObj': custObj})
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})  
+        }
+    })
+})
+
+app.post('/api/customer/purchase', function(req, res){
+    email = req.body.email
+    password = req.body.password
+
+    let ticketID = 0
+
+    connection.query("", function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        ticketID = results.length + 1
+        }
+    })
 
     connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
@@ -180,12 +209,23 @@ app.get('/api/customer/searchForFlights', function(req, res){
     // console.log(obj.departureDate)   
     // console.log(obj.returnDate)   
     connection.query(`
-    SELECT * from Flight NATURAL JOIN Ticket
-    WHERE depart_airport_name LIKE ? 
-    and arrive_airport_name LIKE ? 
-    and depart_date LIKE ? 
-    and arrive_date LIKE ?
-    `, [obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"]] ,function (err, results, fields){
+    with allPurchases(airline_name, flight_number, depart_date, depart_time, arrive_date, arrive_time, arrive_airport_name, depart_airport_name, base_price, status, depart_city) 
+as
+(
+SELECT airline_name, flight_number, depart_date, depart_time, arrive_date, arrive_time, arrive_airport_name, depart_airport_name, base_price, status, city
+from Flight NATURAL join Airport
+WHERE depart_airport_name = Airport.name
+) 
+SELECT airline_name, flight_number, depart_date, depart_time, arrive_date, arrive_time, arrive_airport_name, depart_airport_name, base_price, status,depart_city, city as arrive_city
+FROM allPurchases NATURAL join Airport 
+where arrive_airport_name = Airport.name
+and depart_airport_name LIKE ? 
+and arrive_airport_name LIKE ? 
+and depart_date LIKE ?
+and arrive_date LIKE  ?
+and depart_city LIKE ?
+and city LIKE ?
+    `, [obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"],obj["sourceCity"],obj["destinationCity"]] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
             res.json({
