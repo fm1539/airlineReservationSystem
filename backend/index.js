@@ -215,26 +215,73 @@ app.post('/api/customer/purchaseTickets', function(req, res){
     airline_name = req.body.airline_name
     flight_number = req.body.flight_number
     depart_date = req.body.depart_date
+    depart_date = depart_date.slice(0,depart_date.indexOf('T'))
     depart_time = req.body.depart_time
+    base_price = req.body.base_price
+
+    console.log('email', email);
+    console.log('airline_name', airline_name);
+    console.log('flight_number', flight_number);
+    console.log('depart_date', depart_date);
+    console.log('depart_time', depart_time);
+    console.log('base_price', base_price);
+
     let ticketID = 0
     connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
-        if (err) res.json({'status': 'invaliderr'})
+        if (err) throw err
         else{
-            let ticketID = results.length+1
+            ticketID = results.length+1
+            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
+            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                console.log(ticketID);
+                if (err) throw err
+            })
+            
+            connection.query("INSERT INTO `Customer_Purchases` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`,`customer_email`) VALUES"
+            + `(?, ?, ?, ?, ?, ?)`
+            , [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
+                if (err) res.json({'status': 'invaliderr'})
+                else res.json({'status': 'insertssuccessful'}) 
+            })
         }
     })
-    connection.query(`INSERT INTO 'Ticket' ('ticketID', 'airline_name', 'flight_number', 'depart_date', 'depart_time') 
-    VALUES (?, ?, ?, ?, ?)
-    `, [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
-        if (err) res.json({'status': 'invaliderr'})
-        else res.json({'status': 'insert1successful'}) 
+})
+
+app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
+    const email = req.params.custEmail
+    const startDate = req.query.startDate
+    const endDate = req.query.endDate
+    let today = new Date();
+    today.setMonth(today.getMonth() - 6)
+    const date6MonthsAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 6)
+    const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    //yearTotal spending
+    connection.query(`SELECT sum(base_price) as yearTotal
+    FROM allPurchases NATURAL JOIN Flight
+    WHERE depart_date > ? and customer_email = ?
+    `, [date1YearAgo,email] ,function (err, results, fields){ 
+        if (err) throw err 
     })
-    connection.query(`INSERT INTO 'Customer_Purchases' ('ticketID', 'airline_name', 'flight_number', 'depart_date', 'depart_time','customer_email') 
-    VALUES (?, ?, ?, ?, ?, ?)
-    `, [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
-        if (err) res.json({'status': 'invaliderr'})
-        else res.json({'status': 'insert2successful'}) 
+    //past 6 months spending month by month
+    connection.query(`SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
+    FROM allPurchases natural join Flight
+    WHERE depart_date > ? and customer_email = ?
+    group by MONTH(depart_date)
+    `, [date6MonthsAgo,email] ,function (err, results, fields){  
+        if (err) throw err
     })
+    //spending month by month in a date range
+    connection.query(`
+    SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
+    FROM allPurchases natural join Flight
+    WHERE depart_date > ? and depart_date < ? and customer_email = ?
+    group by MONTH(depart_date)
+    `, [startDate,endDate,email] ,function (err, results, fields){  
+        if (err) res.json({'status': 'invaliderr'})
+    })
+
+
 })
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible

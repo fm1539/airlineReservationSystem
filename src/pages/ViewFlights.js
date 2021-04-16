@@ -34,7 +34,8 @@ function ViewFlights(){
             <h1 style={{textAlign: 'left', marginLeft: '10%', marginTop: '2vh'}}>My Flights</h1>
             <Tabs defaultActiveKey="profile" id="uncontrolled-tab-example">
                 <Tab eventKey="past" title="Past Flights">
-                <Table striped bordered hover style={{width: '60vh', marginLeft: 'auto', marginRight: 'auto', marginTop: '10vh'}}>
+                {/* <Table striped bordered hover style={{width: '60vh', marginLeft: 'auto', marginRight: 'auto', marginTop: '10vh'}}> */}
+                <table>
                 <thead>
                     <tr>
                         <th>Ticket ID</th>
@@ -69,10 +70,12 @@ function ViewFlights(){
                         })
                     }
                 </tbody>
-            </Table>
+                </table>
+            {/* </Table> */}
                 </Tab>
                 <Tab eventKey="future" title="Current/Future Flights">
-                <Table striped bordered hover style={{width: '60vh', marginLeft: 'auto', marginRight: 'auto', marginTop: '10vh'}}>
+                {/* <Table striped bordered hover style={{width: '60vh', marginLeft: 'auto', marginRight: 'auto', marginTop: '10vh'}}> */}
+                <table>
                 <thead>
                     <tr>
                         <th>Ticket ID</th>
@@ -91,23 +94,27 @@ function ViewFlights(){
                     {
                         flights.map((flight)=>{
                             return (
-                                <React.Fragment>
-                                    <td>{flight.ticketID}</td>
-                                    <td>{flight.flight_number}</td>
-                                    <td>{flight.airline_name}</td>
-                                    <td>{flight.depart_date}</td>
-                                    <td>{flight.depart_time}</td>
-                                    <td>{flight.arrive_date}</td>
-                                    <td>{flight.arrive_time}</td>
-                                    <td>{flight.depart_airport_name}</td>
-                                    <td>{flight.arrive_airport_name}</td>
-                                    <td>{flight.base_price}</td>
-                                </React.Fragment>
+                                <div>
+                                    {/* <React.Fragment> */}
+                                        <td>{flight.ticketID}</td>
+                                        <td>{flight.flight_number}</td>
+                                        <td>{flight.airline_name}</td>
+                                        <td>{flight.depart_date}</td>
+                                        <td>{flight.depart_time}</td>
+                                        <td>{flight.arrive_date}</td>
+                                        <td>{flight.arrive_time}</td>
+                                        <td>{flight.depart_airport_name}</td>
+                                        <td>{flight.arrive_airport_name}</td>
+                                        <td>{flight.base_price}</td>
+                                    {/* </React.Fragment> */}
+                                </div>
                             )
                         })
                     }
                 </tbody>
-            </Table>
+            {/* </Table> */}
+            </table>
+
                 </Tab>
             </Tabs>
             

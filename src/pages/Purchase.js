@@ -12,8 +12,8 @@ import {
 import axios from 'axios'
 
 const CheckoutForm = () => {
-  let {airlineName, flightNumber, departDate, departTime} = useParams()
-  console.log(flightNumber, departDate, departTime);
+  let {airlineName, flightNumber, departDate, departTime, basePrice} = useParams()
+  console.log(flightNumber, departDate, departTime, basePrice);
   const stripe = useStripe();
   const elements = useElements();
 
@@ -45,19 +45,22 @@ const CheckoutForm = () => {
       console.log('[PaymentMethod]', paymentMethod);
     }
     let obj = {
+      email: JSON.parse(localStorage.getItem('custObj')).email,
       airline_name: airlineName,
       flight_number: flightNumber,
       depart_date: departDate,
-      depart_time: departTime
+      depart_time: departTime,
+      base_price: basePrice
     }
     axios.post('http://localhost:8000/api/customer/purchaseTickets', obj).then(response=>{
-      console.log(response.data.status);
+      console.log(response.data);
     })
+    window.location = '/viewFlights'
 
   };
 
   return (
-    <div>
+    <div className="checkout">
         <section>
           <div class="product">
             <img
@@ -66,17 +69,17 @@ const CheckoutForm = () => {
             />
             <div class="description">
               <h3>Stubborn Attachments</h3>
-              <h5>$20.00</h5>
+              <h5>${basePrice}</h5>
+              <form onSubmit={handleSubmit}>
+                <CardElement />
+                <button type="submit" id="checkout-button" disabled={!stripe}>Checkout</button>
+              </form>
             </div>
           </div>
           
         </section>
 
-
-    <form onSubmit={handleSubmit}>
-      <CardElement />
-      <button type="submit" id="checkout-button" disabled={!stripe}>Checkout</button>
-    </form>
+    
     
   </div>
   )

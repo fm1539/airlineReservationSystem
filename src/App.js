@@ -37,7 +37,7 @@ function App() {
             <Redirect to="/" />
             }
           </Route>
-          <Route path='/purchase/:airlineName/:flightNumber/:departDate/:departTime' exact>
+          <Route path='/purchase/:airlineName/:flightNumber/:departDate/:departTime/:basePrice' exact>
           {JSON.parse(localStorage.getItem('custObj')) ?
             <Elements stripe={stripePromise}><CheckoutForm /></Elements> :
             <Redirect to="/" />
