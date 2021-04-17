@@ -7,7 +7,7 @@ const stripePublicKey = process.env.PUBLISHABLEKEY
 const stripe = require ('stripe')(stripeSecretKey)
 
 const app = express()               // creating an instance of express
-
+   
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader(
@@ -86,17 +86,7 @@ app.post('/api/customer/login', function(req, res){
 
 app.get('/api/customer/:custEmail/viewFlights', function(req, res){
     const email = req.params.custEmail
-    const today = new Date();
-    const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     connection.query(`
-    with allPurchases(ticketID, airline_name, flight_number, depart_date, depart_time) as 
-    ( 
-    SELECT ticketID, airline_name, flight_number, depart_date, depart_time 
-    FROM Agent_Purchases WHERE ? = customer_email 
-    UNION SELECT ticketID, airline_name, flight_number, depart_date, depart_time 
-    FROM Customer_Purchases WHERE ? = customer_email 
-    ) 
     SELECT * from allPurchases natural join Flight
     `, [email,email] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
@@ -158,6 +148,9 @@ app.get('/api/customer/getAllCities', function (req, res){
 })
 
 app.get('/api/customer/searchForFlights', function(req, res){
+    const today = new Date();
+    const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     const obj ={
         "sourceCity": req.query.sourceCity,
         "sourceAirport": req.query.sourceAirport,
@@ -247,41 +240,75 @@ app.post('/api/customer/purchaseTickets', function(req, res){
     })
 })
 
+app.post('/api/customer/:custEmail/giveRating', function(req, res){
+    const custEmail = req.params.custEmail
+    const airline_name = req.body.airline_name
+    const flight_number = req.body.flight_number
+    const depart_date = req.body.depart_date.slice(0, req.body.depart_date.indexOf('T'))
+    const depart_time = req.body.depart_time
+    const rating = req.body.rating
+    const comments = req.body.comments
+    console.log(custEmail, airline_name, flight_number, depart_date, depart_time, rating, comments);
+    connection.query("INSERT INTO `Rate` (`customer_email`, `airline_name`, `flight_number`, `depart_date`, `depart_time`, `rating`, `comments`) " +
+    `VALUES (?, ?, ?, ?, ?, ?, ?)`, [custEmail, airline_name, flight_number, depart_date, depart_time, rating, comments], function (err, results, fields){
+        console.log(results);
+    })
+    res.json({'status': 'success'})
+})
+
 app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
     const email = req.params.custEmail
-    const startDate = req.query.startDate
-    const endDate = req.query.endDate
+    const startDate = req.body.startDate
+    const endDate = req.body.endDate
+    const duration = req.body.duration
     let today = new Date();
     today.setMonth(today.getMonth() - 6)
     const date6MonthsAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() - 6)
     const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    //yearTotal spending
-    connection.query(`SELECT sum(base_price) as yearTotal
-    FROM allPurchases NATURAL JOIN Flight
-    WHERE depart_date > ? and customer_email = ?
-    `, [date1YearAgo,email] ,function (err, results, fields){ 
-        if (err) throw err 
-    })
-    //past 6 months spending month by month
-    connection.query(`SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
-    FROM allPurchases natural join Flight
-    WHERE depart_date > ? and customer_email = ?
-    group by MONTH(depart_date)
-    `, [date6MonthsAgo,email] ,function (err, results, fields){  
-        if (err) throw err
-    })
-    //spending month by month in a date range
-    connection.query(`
-    SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
-    FROM allPurchases natural join Flight
-    WHERE depart_date > ? and depart_date < ? and customer_email = ?
-    group by MONTH(depart_date)
-    `, [startDate,endDate,email] ,function (err, results, fields){  
-        if (err) res.json({'status': 'invaliderr'})
-    })
 
+    if (startDate != "" && endDate != ""){
 
+        //spending month by month in a date range
+        connection.query(`
+        SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
+        FROM allPurchases natural join Flight
+        WHERE depart_date > ? and depart_date < ? and customer_email = ?
+        group by MONTH(depart_date)
+        `, [startDate,endDate,email] ,function (err, results, fields){  
+            if (err) res.json({'status': 'invaliderr'})
+            else{
+                res.json({'results': results})
+            }
+        })
+    }
+    else if (duration === "6"){ //WHAT IS THE CONDITION?
+        //past 6 months spending month by month
+
+        connection.query(`SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
+        FROM allPurchases natural join Flight
+        WHERE depart_date > ? and customer_email = ?
+        group by MONTH(depart_date)
+        `, [date6MonthsAgo,email] ,function (err, results, fields){  
+            if (err) res.json({'status': 'invaliderr'})
+            else{
+                res.json({'results': results})
+            }
+        })
+    }
+    else{
+        console.log("3sdjkdfgsdaufkhdskjfbvdskufb")
+        //default view: yearTotal spending
+        connection.query(`SELECT sum(base_price) as yearTotal
+        FROM allPurchases NATURAL JOIN Flight
+        WHERE depart_date > ? and customer_email = ?
+        `, [date1YearAgo,email] ,function (err, results, fields){ 
+            if (err) res.json({'status': 'invaliderr'})
+            else{
+                res.json({'results': results})
+            }
+        })
+    }
 })
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
