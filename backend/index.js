@@ -258,17 +258,18 @@ app.post('/api/customer/:custEmail/giveRating', function(req, res){
 
 app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
     const email = req.params.custEmail
-    const startDate = req.body.startDate
-    const endDate = req.body.endDate
-    const duration = req.body.duration
+    const startDate = req.query.startDate
+    const endDate = req.query.endDate
+    const duration = req.query.duration
     let today = new Date();
+    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() - 6)
     const date6MonthsAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() - 6)
     const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
 
-    if (startDate != "" && endDate != ""){
-
+    if (startDate != undefined && endDate != undefined){
+        console.log('here');
         //spending month by month in a date range
         connection.query(`
         SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
@@ -287,9 +288,9 @@ app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
 
         connection.query(`SELECT  sum(base_price) as MonthlyTotal, MONTH(depart_date) as Month
         FROM allPurchases natural join Flight
-        WHERE depart_date > ? and customer_email = ?
+        WHERE depart_date > ? and customer_email = ? and depart_date < ?
         group by MONTH(depart_date)
-        `, [date6MonthsAgo,email] ,function (err, results, fields){  
+        `, [date6MonthsAgo,email, dateToday] ,function (err, results, fields){  
             if (err) res.json({'status': 'invaliderr'})
             else{
                 res.json({'results': results})
@@ -297,12 +298,11 @@ app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
         })
     }
     else{
-        console.log("3sdjkdfgsdaufkhdskjfbvdskufb")
         //default view: yearTotal spending
         connection.query(`SELECT sum(base_price) as yearTotal
         FROM allPurchases NATURAL JOIN Flight
-        WHERE depart_date > ? and customer_email = ?
-        `, [date1YearAgo,email] ,function (err, results, fields){ 
+        WHERE depart_date > ? and customer_email = ? and depart_date < ?
+        `, [date1YearAgo,email,dateToday] ,function (err, results, fields){ 
             if (err) res.json({'status': 'invaliderr'})
             else{
                 res.json({'results': results})

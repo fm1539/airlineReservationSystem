@@ -7,6 +7,7 @@ import ViewFlights from './pages/ViewFlights'
 import CheckoutForm from './pages/Purchase'
 import React from 'react';
 import ReactDOM from 'react-dom';
+import TrackSpender from './pages/TrackSpending'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -45,6 +46,12 @@ function App() {
           </Route>
           <Route path='/searchResults'>
             <SearchResults />
+          </Route>
+          <Route path='/trackSpending' exact>
+            {JSON.parse(localStorage.getItem('custObj')) ?
+            <TrackSpender /> :
+            <Redirect to="/" />
+            }
           </Route>
         </Switch>
       </Router>

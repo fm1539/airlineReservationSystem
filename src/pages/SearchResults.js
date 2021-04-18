@@ -41,7 +41,7 @@ function SearchResults(){
 
     const loginButtonHandler = () => {
         console.log(loginEvent)
-        login(loginEvent, '/searchResults')
+        login(loginEvent, '/searchResults'+window.location.search)
     }
 
     const [registerEvent, setRegisterEvent] = useState({
@@ -98,18 +98,27 @@ function SearchResults(){
     const rowEvents = {
         onClick: (e, row, rowIndex) => {
           console.log(row);
-          window.location = '/purchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price
+          if (loggedIn) window.location = '/purchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price    
+          else handleShow()
         }
       };
 
     return (
         <div>
-            <NavBar 
-                nav={[['/viewFlights', 'View My Flights'], ['#pricing', 'Flight Tracker']]} 
+            {loggedIn ? <NavBar 
+                nav={[['/viewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
             />
+            :
+            <NavBar 
+                nav={[['#pricing', 'Flight Tracker']]} 
+                accountManagement={[handleShow, handleShow2]}
+                loggedIn = {loggedIn}
+                logOut = {logout}
+            />
+        }
             <Modal centered show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                 <Modal.Title>Sign In</Modal.Title>

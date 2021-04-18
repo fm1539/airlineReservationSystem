@@ -128,14 +128,14 @@ function ViewFlights(){
         console.log(obj);
         axios.post('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/giveRating', obj)
         .then(response => {
-            console.log(response);
+            handleClose()
         })
     }
 
     return (
         <div>
             <NavBar 
-                nav={[['/viewFlights', 'View My Flights'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/viewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 loggedIn = {true}
                 logOut = {logout}
             />
