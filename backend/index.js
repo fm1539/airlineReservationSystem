@@ -146,11 +146,14 @@ app.get('/api/customer/getAllCities', function (req, res){
         }
     })
 })
-
 app.get('/api/customer/searchForFlights', function(req, res){
     const today = new Date();
     const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    const yestDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+(today.getDate()-1);
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    console.log(date)
+    console.log(yestDate)
+    console.log(time)
     const obj ={
         "sourceCity": req.query.sourceCity,
         "sourceAirport": req.query.sourceAirport,
@@ -173,23 +176,19 @@ app.get('/api/customer/searchForFlights', function(req, res){
     // console.log(obj.departureDate)   
     // console.log(obj.returnDate)   
     connection.query(`
-    with allPurchases(airline_name, flight_number, depart_date, depart_time, arrive_date, arrive_time, arrive_airport_name, depart_airport_name, base_price, status, depart_city) 
-as
-(
-SELECT airline_name, flight_number, depart_date, depart_time, arrive_date, arrive_time, arrive_airport_name, depart_airport_name, base_price, status, city
-from Flight NATURAL join Airport
-WHERE depart_airport_name = Airport.name
-) 
-SELECT airline_name, flight_number, depart_date, depart_time, arrive_date, arrive_time, arrive_airport_name, depart_airport_name, base_price, status,depart_city, city as arrive_city
-FROM allPurchases NATURAL join Airport 
-where arrive_airport_name = Airport.name
-and depart_airport_name LIKE ? 
-and arrive_airport_name LIKE ? 
-and depart_date LIKE ?
-and arrive_date LIKE  ?
-and depart_city LIKE ?
-and city LIKE ?
-    `, [obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"],obj["sourceCity"],obj["destinationCity"]] ,function (err, results, fields){
+    SELECT *
+    FROM (allFlights NATURAL JOIN Uses NATURAL join Airplane)
+    WHERE seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
+    and depart_date > ?
+    and (flight_number,airline_name,depart_date,depart_time) 
+    not in (SELECT flight_number,airline_name,depart_date,depart_time from allFlights where depart_date = ? and depart_time< ? ) 
+    and depart_airport_name LIKE ? 
+    and arrive_airport_name LIKE ? 
+    and depart_date LIKE ?
+    and arrive_date LIKE  ?
+    and depart_city LIKE ?
+    and arrive_city LIKE ?
+    `,[yestDate, date, time, obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"],obj["sourceCity"],obj["destinationCity"]] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
             res.json({
@@ -202,7 +201,6 @@ and city LIKE ?
         }
     })
 })
-
 app.post('/api/customer/purchaseTickets', function(req, res){
     email = req.body.email
     airline_name = req.body.airline_name

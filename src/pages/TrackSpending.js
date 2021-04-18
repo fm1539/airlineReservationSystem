@@ -9,7 +9,7 @@ function TrackSpender(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
     const [last6Data, set6Data] = useState([]);
-    const [last12Data, set12Data] = useState([]);
+    const [last12Data, set12Data] = useState(0);
     const [fromDate, setFromDate] = useState("")
     const [toDate, setToDate] = useState("")
     const [rangeData, setRangeData] = useState([])
@@ -33,10 +33,19 @@ function TrackSpender(){
         setRangeData(arr)
     }
 
+    const obj = {
+      1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'June',
+      7: 'July', 8: 'Aug', 9: 'Sept', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+    } 
+
     const filterHandler = () => {
         const query = "?startDate=" + fromDate +"&endDate=" + toDate
         axios.get('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/trackMySpending'+query).then(response => {
-            rangeDateHandler(response.data.results);
+          let arr = [['Month', 'Spent($)']]   
+          response.data.results.forEach((element, i) => {
+            arr.push([obj[response.data.results[i].Month], response.data.results[i].MonthlyTotal])
+          });
+        rangeDateHandler(arr);
         })
     }
     const handleClose = () => setShow(false);
@@ -49,21 +58,20 @@ function TrackSpender(){
         loggedIn = true
     }
 
-
     useEffect(()=>{
         //Past 6 Months
         axios.get('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/trackMySpending?duration=6').then(response=>{
             console.log('6',response.data.results);
-            last6Handler(response.data.results)
+            let arr = [['Month', 'Spent($)']]   
+            response.data.results.forEach((element, i) => {
+              arr.push([obj[response.data.results[i].Month], response.data.results[i].MonthlyTotal])
+            });
+            last6Handler(arr)
         })
         //Past 12 Months
         axios.get('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/trackMySpending?duration=12').then(response=>{
-            console.log('12', response.data.results);
-            last12Handler(response.data.results)
+            last12Handler(response.data.results[0].yearTotal)
         })
-    
-            
-    
     }, [])
 
     return (
@@ -73,9 +81,7 @@ function TrackSpender(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
-            />
-            <h1>Click on Row to Review</h1>
-            
+            />            
                 <Tab.Container id="left-tabs-example" defaultActiveKey="first">
                     <Row>
                         <Col sm={3}>
@@ -87,7 +93,7 @@ function TrackSpender(){
                             <Nav.Link eventKey="last6">Last 6 Months</Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
-                            <Nav.Link eventKey="third">Last 12 Months</Nav.Link>
+                            <Nav.Link eventKey="last12">Last 12 Months</Nav.Link>
                             </Nav.Item>
                         </Nav>
                         </Col>
@@ -99,22 +105,15 @@ function TrackSpender(){
                                 <label>To</label>
                                 <input type="date" onChange={toDateHandler}/>
                                 <Button onClick={filterHandler}>Filter</Button>
+                                {rangeData.length>0 ?
                                 <Chart
                                 width={400}
                                 height={300}
                                 chartType="ColumnChart"
                                 loader={<div>Loading Chart</div>}
-                                data={[
-                                ['Month', '2010 Population'],
-                                ['Month 1', 8175000],
-                                ['Month 2', 3792000],
-                                ['Month 3', 2695000],
-                                ['Month 4', 2099000],
-                                ['Month 5', 1526000],
-                                ['Month 6', 100000]
-                                ]}
+                                data={rangeData}
                                 options={{
-                                title: 'Tracking Last 6 months',
+                                title: 'Ranged Dates',
                                 chartArea: { width: '30%' },
                                 hAxis: {
                                     title: 'Month',
@@ -126,6 +125,10 @@ function TrackSpender(){
                                 }}
                                 legendToggle
                                 />
+                                :
+                                null
+                              }
+                                
                             </Tab.Pane>
                             <Tab.Pane eventKey="last6">
                                 <Chart
@@ -133,14 +136,7 @@ function TrackSpender(){
                                     height={300}
                                     chartType="ColumnChart"
                                     loader={<div>Loading Chart</div>}
-                                    data={[
-                                    ['City', '2010 Population', '2000 Population'],
-                                    ['New York City, NY', 8175000, 8008000],
-                                    ['Los Angeles, CA', 3792000, 3694000],
-                                    ['Chicago, IL', 2695000, 2896000],
-                                    ['Houston, TX', 2099000, 1953000],
-                                    ['Philadelphia, PA', 1526000, 1517000],
-                                    ]}
+                                    data={last6Data}
                                     options={{
                                     title: 'Tracking Last 6 months',
                                     chartArea: { width: '30%' },
@@ -154,6 +150,9 @@ function TrackSpender(){
                                     }}
                                     legendToggle
                                     />
+                            </Tab.Pane>
+                            <Tab.Pane eventKey="last12">
+                              <h1>Total Spending: ${last12Data}</h1>
                             </Tab.Pane>
                         </Tab.Content>
                         </Col>
