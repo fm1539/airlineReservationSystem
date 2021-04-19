@@ -1,9 +1,11 @@
 .App {
   text-align: center;
   /* background-color: silver; */
+  overflow-x: scroll;
 }
 body {
   background-color: 	#F0F0F0 !important;
+  overflow-x: scroll;
 }
 
 .App-logo {
@@ -56,12 +58,16 @@ body {
   background-color: #cccccc;
   background-repeat: round;
 } 
+.a-search-flights-div{
+  background-image: url("./wall1.jpeg");
+}
 
 .logo {
   width: 100%;
   transform: skew(20deg);
   position: relative;
   animation: move 2s infinite;
+  border-radius: 6px;
 }
 
 @keyframes move {

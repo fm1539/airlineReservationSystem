@@ -13,12 +13,25 @@ async function login(custObj, path) {
     window.location = path
 }
 
+async function aLogin(agentObj, path) {
+    const response = await axios.post('http://localhost:8000/api/agent/login', agentObj)
+    localStorage.setItem('agentObj', JSON.stringify(response.data.agentObj))
+    window.location = path
+}
+
 const register = (registerEvent, path) => {
     axios.post('http://localhost:8000/api/customer/register', registerEvent).then( response => {
             if (response.data.status === "registered") window.location = path
             else alert('Username or Email already exists')
         }
     )
+}
+
+const aRegister = (registerEvent, path) => {
+    axios.post('http://localhost:8000/api/agent/register', registerEvent).then( response => {
+        if (response.data.status === "registered") window.location = path
+        else alert('Username or Email already exists')
+    })
 }
 
 const checkLoggedIn = () => {
@@ -30,10 +43,26 @@ const checkLoggedIn = () => {
     }
 }
 
+const aCheckLoggedIn = () => {
+    if (JSON.parse(localStorage.getItem('agentObj')) === null){
+        return false
+    }
+    else{
+        return true
+    }
+}
+
 const logout = () => {
-    localStorage.clear()
+    localStorage.removeItem('custObj')
     window.location = '/'
 }
+
+const aLogout = () => {
+    localStorage.removeItem('agentObj')
+    window.location = '/agent'
+}
+
+export {login, aLogin, logout, aLogout, checkLoggedIn, aCheckLoggedIn, register, aRegister}
 
 // const Reducer = (state, action) => {
 //     switch (action.type) {
@@ -77,5 +106,3 @@ const logout = () => {
 //             return state;
 //     }
 // };
-
-export {login, logout, checkLoggedIn, register}

@@ -3,11 +3,13 @@ import {BrowserRouter as Router} from 'react-router-dom'
 import {Route, Switch, Redirect} from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import SearchResults from './pages/SearchResults';
+import ASearchResults from './pages/ASearchResults';
 import ViewFlights from './pages/ViewFlights'
 import CheckoutForm from './pages/Purchase'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TrackSpender from './pages/TrackSpending'
+import AHomePage from './pages/AHomePage'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -52,6 +54,12 @@ function App() {
             <TrackSpender /> :
             <Redirect to="/" />
             }
+          </Route>
+          <Route path='/agent' exact>
+            <AHomePage />
+          </Route>
+          <Route path='/agent/searchResults'>
+            <ASearchResults />
           </Route>
         </Switch>
       </Router>

@@ -85,8 +85,8 @@ app.post('/api/customer/login', function(req, res){
 app.get('/api/customer/:custEmail/viewFlights', function(req, res){
     const email = req.params.custEmail
     connection.query(`
-    SELECT * from allPurchases natural join Flight
-    `, [email,email] ,function (err, results, fields){
+    SELECT * from allPurchases natural join Flight where customer_email  = ?
+    `, [email] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
             const futureFlightObj = {
@@ -149,9 +149,6 @@ app.get('/api/customer/searchForFlights', function(req, res){
     const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     const yestDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+(today.getDate()-1);
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-    console.log(date)
-    console.log(yestDate)
-    console.log(time)
     const obj ={
         "sourceCity": req.query.sourceCity,
         "sourceAirport": req.query.sourceAirport,
@@ -333,6 +330,147 @@ app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
             }
         })
     }
+})
+
+app.post('/api/agent/register', function(req, res){
+    email = req.body.email
+    password = req.body.password
+
+    connection.query("Select * from `Agent` Where 1", function (err, results, fields){
+        if (err) throw err
+        else{
+            agent_ID = results.length+1
+            connection.query("INSERT INTO `Agent` (`email`, `password`, `agent_ID`) VALUES"+ `(?, ?, ?)`
+            , [email, password, agent_ID], function (err, results, fields){
+                if (err) res.json({'status': 'invalid'})
+                else res.json({'status': 'registered'})  
+            })
+        }
+    })
+});
+
+app.post('/api/agent/login', function(req, res){
+    email = req.body.email
+    password = req.body.password
+
+    connection.query(`SELECT email FROM Agent WHERE email = ? and password = ?`, [email, password],function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+
+        if (results.length){    //if non empty result
+            console.log(results[0].email);
+            const agentObj = {
+                'email': results[0].email
+            }
+            res.json({'status': 'logged', 'agentObj': agentObj})
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})  
+        }
+    })
+})
+
+app.get('/api/agent/:agentEmail/viewFlights', function(req, res){
+    const email = req.params.agentEmail
+    connection.query(`SELECT * from Agent_Purchases NATURAL JOIN Flight where agent_email = ?
+    `, [email] ,function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        if (results.length){ //non empty result
+            const flightObj = {
+                email: email,
+                results
+            }
+            res.json({
+                'status': 'success',
+                'flightObj': flightObj
+            })
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})
+        }
+    })
+})
+app.get('/api/agent/searchForFlights', function(req, res){
+    const today = new Date();
+    const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    const yestDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+(today.getDate()-1);
+    const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    const obj ={
+        "sourceCity": req.query.sourceCity,
+        "sourceAirport": req.query.sourceAirport,
+        "destinationCity": req.query.destinationCity,
+        "destinationAirport": req.query.destinationAirport,
+        "departureDate": req.query.departureDate,
+        "returnDate": req.query.returnDate
+    }
+    for (var key in obj){
+        if (obj[key] === undefined){
+            obj[key] = '%'
+        }
+    }
+    connection.query(`
+    SELECT *
+    FROM (allFlights NATURAL JOIN Uses NATURAL join Airplane)
+    WHERE seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
+    and depart_date > ?
+    and (flight_number,airline_name,depart_date,depart_time) 
+    not in (SELECT flight_number,airline_name,depart_date,depart_time from allFlights where depart_date = ? and depart_time< ? ) 
+    and depart_airport_name LIKE ? 
+    and arrive_airport_name LIKE ? 
+    and depart_date LIKE ?
+    and arrive_date LIKE  ?
+    and depart_city LIKE ?
+    and arrive_city LIKE ?
+    `,[yestDate, date, time, obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"],obj["sourceCity"],obj["destinationCity"]] ,function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+        if (results.length){ //non empty result
+            res.json({
+                'status': 'success',
+                'flightsArr': results
+            })
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})
+        }
+    })
+})
+
+app.post('/api/agent/purchaseTickets', function(req, res){
+    customer_email = req.body.customer_email
+    agent_email = req.body.agent_email
+    airline_name = req.body.airline_name
+    flight_number = req.body.flight_number
+    depart_date = req.body.depart_date
+    depart_date = depart_date.slice(0,depart_date.indexOf('T'))
+    depart_time = req.body.depart_time
+    base_price = req.body.base_price
+    
+    console.log('agent_email', agent_email);
+    console.log('agent_email', agent_email);
+    console.log('airline_name', airline_name);
+    console.log('flight_number', flight_number);
+    console.log('depart_date', depart_date);
+    console.log('depart_time', depart_time);
+    console.log('base_price', base_price);
+
+    let ticketID = 0
+    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
+        if (err) throw err
+        else{
+            ticketID = results.length+1
+            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
+            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                console.log(ticketID);
+                if (err) throw err
+            })
+            
+            connection.query("INSERT INTO `Customer_Purchases` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`,`customer_email`) VALUES"
+            + `(?, ?, ?, ?, ?, ?)`
+            , [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
+                if (err) res.json({'status': 'invaliderr'})
+                else res.json({'status': 'insertssuccessful'}) 
+            })
+        }
+    })
 })
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible

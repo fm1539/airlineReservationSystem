@@ -20,16 +20,16 @@ function SearchResults(){
 
     const flightHandler = (arr) => {
         setFlights(arr)
+        console.log(flights);
     }
 
-    useEffect(()=>{
+    useEffect(async ()=>{
         var search = window.location.search
         // console.log(JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}'))
         console.log(search);
-        axios.get('http://localhost:8000/api/customer/searchForFlights'+search).then(response => {
-            console.log(response);
-            flightHandler(response.data.flightsArr)
-        })
+        const response = await axios.get('http://localhost:8000/api/customer/searchForFlights'+search)
+        console.log(response);
+        if (response.data.status !== 'invalidempty') flightHandler(response.data.flightsArr);
     }, [])
 
     const loginChangeHandler = (event) => {
@@ -83,7 +83,7 @@ function SearchResults(){
 <td>{flight.base_price}</td> */}
 
     const columns = [
-        { dataField: "ticketID", text: 'Ticket ID' },
+        { dataField: "ID", text: 'Ticket ID' },
         { dataField: "flight_number", text: 'Flight #'},
         { dataField: "airline_name", text: 'Airline Name'},
         { dataField: "depart_date", text: 'Departure Date'},
