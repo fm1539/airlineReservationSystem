@@ -1,9 +1,7 @@
 const express = require('express')  //import
 const bodyParser = require('body-parser')   //import
 require('dotenv').config()
-
 const stripeSecretKey = process.env.SECRETKEY 
-const stripePublicKey = process.env.PUBLISHABLEKEY
 const stripe = require ('stripe')(stripeSecretKey)
 
 const app = express()               // creating an instance of express
@@ -169,7 +167,6 @@ app.get('/api/customer/searchForFlights', function(req, res){
         }
     }
 
-    console.log(obj);
 
     // console.log(obj.sourceAirport)    
     // console.log(obj.destinationAirport)   
@@ -201,41 +198,70 @@ app.get('/api/customer/searchForFlights', function(req, res){
         }
     })
 })
-app.post('/api/customer/purchaseTickets', function(req, res){
-    email = req.body.email
-    airline_name = req.body.airline_name
-    flight_number = req.body.flight_number
-    depart_date = req.body.depart_date
+app.post('/api/customer/purchaseTickets', async (req, res) => {
+    const email = req.body.obj.email
+    const airline_name = req.body.obj.airline_name
+    const flight_number = req.body.obj.flight_number
+    var depart_date = req.body.obj.depart_date
     depart_date = depart_date.slice(0,depart_date.indexOf('T'))
-    depart_time = req.body.depart_time
-    base_price = req.body.base_price
+    const depart_time = req.body.obj.depart_time
+    const base_price = req.body.obj.base_price
 
-    console.log('email', email);
-    console.log('airline_name', airline_name);
-    console.log('flight_number', flight_number);
-    console.log('depart_date', depart_date);
-    console.log('depart_time', depart_time);
-    console.log('base_price', base_price);
+    try {
+        const customer = await stripe.customers.create ({
+            email: req.body.token.email,
+            source: req.body.token.id
+        })
+        //const idempotency_key = uuid()
+        //console.log("HERE 223");
+        //console.log("KEY:", idempotency_key);
+        const charge = await stripe.charges.create({
+                amount: base_price * 100,
+                currency: "usd",
+                customer: customer.id,
+                receipt_email: req.body.token.email,
+                description: "Purchased ticket for flight# " + flight_number + " on " + airline_name,
+                shipping: {
+                    name: req.body.token.card.name,
+                    address: {
+                        line1: req.body.token.card.address_line1,
+                        line2: req.body.token.card.address_line2,
+                        city: req.body.token.card.address_city,
+                        country: req.body.token.card.address_country,
+                        postal_code: req.body.token.card.address_zip
+                    }
+                }
+            }, function (err, success) {
+                if (err) console.log(err);
+                else {
+                    console.log(charge);
+                    let ticketID = 0
+                    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
+                        if (err) throw err
+                        else{
+                            ticketID = results.length+1
+                            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
+                            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                                if (err) throw err
+                            })
+                            
+                            connection.query("INSERT INTO `Customer_Purchases` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`,`customer_email`) VALUES"
+                            + `(?, ?, ?, ?, ?, ?)`
+                            , [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
+                                if (err) res.json({'status': 'invaliderr'})
+                                else res.json({'status': 'insertssuccessful'}) 
+                            })
+                        }
+                    })
+                } 
+            }
+        )
 
-    let ticketID = 0
-    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
-        if (err) throw err
-        else{
-            ticketID = results.length+1
-            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
-            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
-                console.log(ticketID);
-                if (err) throw err
-            })
-            
-            connection.query("INSERT INTO `Customer_Purchases` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`,`customer_email`) VALUES"
-            + `(?, ?, ?, ?, ?, ?)`
-            , [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
-                if (err) res.json({'status': 'invaliderr'})
-                else res.json({'status': 'insertssuccessful'}) 
-            })
-        }
-    })
+    } catch(e) {
+        console.log("here");
+        res.json({'status': 'invaliderr'})
+    }
+
 })
 
 app.post('/api/customer/:custEmail/giveRating', function(req, res){
