@@ -435,19 +435,19 @@ app.get('/api/agent/searchForFlights', function(req, res){
 })
 
 app.post('/api/agent/purchaseTickets', function(req, res){
-    customer_email = req.body.customer_email
-    agent_email = req.body.agent_email
-    airline_name = req.body.airline_name
-    flight_number = req.body.flight_number
-    depart_date = req.body.depart_date
-    depart_date = depart_date.slice(0,depart_date.indexOf('T'))
-    depart_time = req.body.depart_time
-    base_price = req.body.base_price
-    
-    console.log('agent_email', agent_email);
+    console.log(req.body.obj);
+    customer_email = req.body.obj.customer_email
+    agent_email = req.body.obj.agent_email
+    airline_name = req.body.obj.airline_name
+    flight_number = req.body.obj.flight_number
+    console.log('customer_email', customer_email);
     console.log('agent_email', agent_email);
     console.log('airline_name', airline_name);
     console.log('flight_number', flight_number);
+    depart_date = req.body.obj.depart_date
+    depart_date = depart_date.slice(0,depart_date.indexOf('T'))
+    depart_time = req.body.obj.depart_time
+    base_price = req.body.obj.base_price
     console.log('depart_date', depart_date);
     console.log('depart_time', depart_time);
     console.log('base_price', base_price);
@@ -463,13 +463,20 @@ app.post('/api/agent/purchaseTickets', function(req, res){
                 if (err) throw err
             })
             
-            connection.query("INSERT INTO `Customer_Purchases` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`,`customer_email`) VALUES"
-            + `(?, ?, ?, ?, ?, ?)`
-            , [ticketID,airline_name,flight_number,depart_date,depart_time,email], function (err, results, fields){
+            connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
+            + `(?, ?, ?, ?, ?, ?,?)`
+            , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
                 if (err) res.json({'status': 'invaliderr'})
                 else res.json({'status': 'insertssuccessful'}) 
             })
         }
+    })
+})
+
+app.get('/api/agent/:agentEmail/viewMyCommission', function(req, res){
+    agent_email = res.param.agentEmail
+    connection.query(``, function (err, results, fields){
+
     })
 })
 

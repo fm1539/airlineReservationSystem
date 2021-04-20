@@ -7,7 +7,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 
-function SearchResults(){
+function ASearchResults(){
 
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
@@ -27,7 +27,7 @@ function SearchResults(){
         var search = window.location.search
         // console.log(JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}'))
         console.log(search);
-        const response = await axios.get('http://localhost:8000/api/customer/searchForFlights'+search)
+        const response = await axios.get('http://localhost:8000/api/agent/searchForFlights'+search)
         console.log(response);
         if (response.data.status !== 'invalidempty') flightHandler(response.data.flightsArr);
     }, [])
@@ -41,13 +41,12 @@ function SearchResults(){
 
     const loginButtonHandler = () => {
         console.log(loginEvent)
-        login(loginEvent, '/searchResults'+window.location.search)
+        aLogin(loginEvent, '/aSearchResults'+window.location.search)
     }
 
     const [registerEvent, setRegisterEvent] = useState({
-        email: "", name: "", password: "", building_number: "",
-        street: "", city: "", state: "", passport_number: "", phone_number: "",
-        passport_expiration: "", passport_country: "", date_of_birth: ""
+        email: "",
+        password: ""
     })
 
     const registerChangeHandler = (event) => {
@@ -58,7 +57,7 @@ function SearchResults(){
     }
 
     const registerButtonHandler = () => {
-        register(registerEvent, '/searchResults')
+        aRegister(registerEvent, '/aSearchResults')
     }
 
     const handleClose = () => setShow(false);
@@ -68,7 +67,7 @@ function SearchResults(){
     const handleShow2 = () => setShow2(true);
 
     let loggedIn = false
-    if (checkLoggedIn()){
+    if (aCheckLoggedIn()){
         loggedIn = true
     }
 {/* <td>{flight.ticketID}</td>
@@ -98,7 +97,7 @@ function SearchResults(){
     const rowEvents = {
         onClick: (e, row, rowIndex) => {
           console.log(row);
-          if (loggedIn) window.location = '/purchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price    
+          if (loggedIn) window.location = '/aPurchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price    
           else handleShow()
         }
       };
@@ -106,17 +105,17 @@ function SearchResults(){
     return (
         <div>
             {loggedIn ? <NavBar 
-                nav={[['/viewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
-                logOut = {logout}
+                logOut = {aLogout}
             />
             :
             <NavBar 
                 nav={[['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
-                logOut = {logout}
+                logOut = {aLogout}
             />
         }
             <Modal centered show={show} onHide={handleClose}>
@@ -151,56 +150,6 @@ function SearchResults(){
                 </Modal.Header>
                 <Modal.Body>
                     <form>
-                        <label>Name</label>
-                        <br/>
-                        <input name="name" placeholder="Name" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>Address Line 1: Building Number</label>
-                        <br/>
-                        <input name="building_number" placeholder="Building Number" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>Address Line 2: Street</label>
-                        <br/>
-                        <input name="street" placeholder="street" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>City</label>
-                        <br/>
-                        <input name="city" placeholder="city" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>State</label>
-                        <br/>
-                        <input name="state" placeholder="state" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>Phone Number</label>
-                        <br/>
-                        <input type="tel" name="phone_number" placeholder="Phone Number" onChange={registerChangeHandler} required/>
-                        <br />
-                        <br />
-                        <label>Passport #</label>
-                        <br/>
-                        <input name="passport_number" placeholder="Passport #" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>Passport Expiration</label>
-                        <br/>
-                        <input type="date" name="passport_expiration" placeholder="Passport Expiration" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>Passport Country</label>
-                        <br/>
-                        <input name="passport_country" placeholder="Country of passport" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
-                        <label>Date of Birth</label>
-                        <br/>
-                        <input type="date" name="date_of_birth" placeholder="Date of Birth" onChange={registerChangeHandler} required/>
-                        <br/>
-                        <br/>
                         <label>Email</label>
                         <br/>
                         <input type="email" name="email" placeholder="Email" onChange={registerChangeHandler} required/>
@@ -229,9 +178,8 @@ function SearchResults(){
                 rowEvents={ rowEvents }
                 pagination={paginationFactory()}
             />
-
         </div>
     )
 }
 
-export default SearchResults
+export default ASearchResults

@@ -8,7 +8,7 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 
-function ViewFlights(){
+function AViewFlights(){
 
     const [flights, setFlights] = useState([])
 
@@ -85,9 +85,10 @@ function ViewFlights(){
     }, [flights])
     
     useEffect(() => {
-        axios.get('http://localhost:8000/api/customer/' + JSON.parse(localStorage.getItem('custObj')).email + '/viewFlights').then( response => {
+        axios.get('http://localhost:8000/api/agent/' + JSON.parse(localStorage.getItem('agentObj')).email + '/viewFlights').then( response => {
+            console.log(response);
             if (response.data.status == 'success'){
-                flightsHandler(response.data.futureFlightObj.results)
+                flightsHandler(response.data.flightObj.results)
             }
         })
     }, []) 
@@ -135,9 +136,9 @@ function ViewFlights(){
     return (
         <div>
             <NavBar 
-                nav={[['/viewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 loggedIn = {true}
-                logOut = {logout}
+                logOut = {aLogout}
             />
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
@@ -195,7 +196,7 @@ function ViewFlights(){
 
 }
 
-export default ViewFlights
+export default AViewFlights
 
 
 

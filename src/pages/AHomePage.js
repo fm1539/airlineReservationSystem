@@ -89,7 +89,8 @@ function AHomePage(){
     }
 
     const [registerEvent, setRegisterEvent] = useState({
-        email: "", password: ""
+        email: "", 
+        password: ""
     })
 
     const registerChangeHandler = (event) => {
@@ -119,7 +120,7 @@ function AHomePage(){
     return (
         <React.Fragment>
             {loggedIn ? <NavBar 
-                nav={[['/viewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {aLogout}

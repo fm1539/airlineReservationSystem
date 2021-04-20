@@ -5,7 +5,9 @@ import HomePage from './pages/HomePage'
 import SearchResults from './pages/SearchResults';
 import ASearchResults from './pages/ASearchResults';
 import ViewFlights from './pages/ViewFlights'
+import AViewFlights from './pages/AViewFlights'
 import CheckoutForm from './pages/Purchase'
+import ACheckoutForm from './pages/APurchase'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TrackSpender from './pages/TrackSpending'
@@ -40,11 +42,23 @@ function App() {
             <Redirect to="/" />
             }
           </Route>
+          <Route path='/aViewFlights' exact>
+            {JSON.parse(localStorage.getItem('agentObj')) ?
+            <AViewFlights /> :
+            <Redirect to="/" />
+          }
+          </Route>
           <Route path='/purchase/:airlineName/:flightNumber/:departDate/:departTime/:basePrice' exact>
           {JSON.parse(localStorage.getItem('custObj')) ?
             <Elements stripe={stripePromise}><CheckoutForm /></Elements> :
             <Redirect to="/" />
           }
+          </Route>
+          <Route path='/aPurchase/:airlineName/:flightNumber/:departDate/:departTime/:basePrice' exact>
+          {JSON.parse(localStorage.getItem('agentObj')) ?
+            <Elements stripe={stripePromise}><ACheckoutForm /></Elements> :
+            <Redirect to="/" />
+          } 
           </Route>
           <Route path='/searchResults'>
             <SearchResults />
