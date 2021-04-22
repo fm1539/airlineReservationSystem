@@ -435,8 +435,7 @@ app.get('/api/agent/searchForFlights', function(req, res){
 })
 
 app.post('/api/agent/purchaseTickets', function(req, res){
-    console.log(req.body.obj);
-    customer_email = req.body.obj.customer_email
+    customer_email = req.body.token.email
     agent_email = req.body.obj.agent_email
     airline_name = req.body.obj.airline_name
     flight_number = req.body.obj.flight_number
@@ -451,6 +450,28 @@ app.post('/api/agent/purchaseTickets', function(req, res){
     console.log('depart_date', depart_date);
     console.log('depart_time', depart_time);
     console.log('base_price', base_price);
+
+    connection.query("Select email from `Customer` Where email=?", [customer_email], (err, results, fields) => {
+        if (err) throw err;
+        else{
+            if (results.length === 0){
+                connection.query("Select email from `Agent` Where email=?", [customer_email], (err, results, fields) => {
+                    if (err) throw err;
+                    else{
+                        if (results.length){
+                            res.json({'status': 'agentEmail was provided'})
+                            return
+                        }
+                        else{
+                            res.json({'status': 'no email'})
+                            return
+                        }
+                    }
+                })
+            }
+        }
+        
+    })
 
     let ticketID = 0
     connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
@@ -474,10 +495,33 @@ app.post('/api/agent/purchaseTickets', function(req, res){
 })
 
 app.get('/api/agent/:agentEmail/viewMyCommission', function(req, res){
-    agent_email = res.param.agentEmail
-    connection.query(``, function (err, results, fields){
-
-    })
+    const agent_email = req.params.agentEmail
+    const startDate = req.body.startDate
+    const endDate = req.body.endDate
+    const today = new Date();
+    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 1)
+    const date1MonthAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    if (startDate == undefined && endDate == undefined){
+        connection.query(`SELECT Sum(base_price*.1) as totalCommission, avg(base_price*.1) as avgCommission, count(base_price) as ticketsSold
+        FROM Agent_Purchases NATURAL JOIN Flight
+        WHERE depart_date >= ? and depart_date < ? and agent_email = ?
+        `, [date1MonthAgo, dateToday, agent_email], function (err, results, fields){
+            if (err) res.json({'status': 'invaliderr'})
+            else res.json({'email': agent_email, 
+                            'results': results})
+        })
+    }
+    else{
+        connection.query(`SELECT Sum(base_price*.1) as totalCommission, count(base_price) as ticketsSold
+        FROM Agent_Purchases NATURAL JOIN Flight
+        WHERE depart_date >= ? and depart_date < ? and agent_email = ?
+        `, [startDate, endDate, agent_email], function (err, results, fields){
+            if (err) res.json({'status': 'invaliderr'})
+            else res.json({'email': agent_email, 
+                            'results': results})
+        })
+    }
 })
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible

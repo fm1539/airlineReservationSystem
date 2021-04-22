@@ -22,7 +22,6 @@ var ACheckoutForm = () => {
 
   let obj = {
       agent_email: JSON.parse(localStorage.getItem('agentObj')).email,
-      customer_email: JSON.parse(localStorage.getItem('custObj')).email,
       airline_name: airlineName,
       flight_number: flightNumber,
       depart_date: departDate,
@@ -30,11 +29,15 @@ var ACheckoutForm = () => {
       base_price: basePrice,
   }
 
-  console.log(obj);
-
   var handleToken = async (token, addresses) => {
     await axios.post('http://localhost:8000/api/agent/purchaseTickets', { obj, token }).then(response=>{
         console.log(response);
+        if (response.data.status === "agentEmail was provided"){
+          alert("Agent email was Provided. Please enter the customer email.")
+        }
+        else if (response.data.status === "no email"){
+          alert("Email does not exist.")
+        }
     })
     // const { status } = response.data;
     // console.log("Response:", response.data);
