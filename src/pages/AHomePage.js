@@ -80,7 +80,7 @@ function AHomePage(){
         }
         query = query.slice(0, query.length-1)
         
-        window.location = "/agent/searchResults?" + query
+        window.location = "/aSearchResults?" + query
 
     }
 
@@ -120,10 +120,11 @@ function AHomePage(){
     return (
         <React.Fragment>
             {loggedIn ? <NavBar 
-                nav={[['/aViewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'], ['/viewTop', 'View Top Customers'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {aLogout}
+                logoPath="/agent"
             />
             :
             <NavBar 
@@ -131,6 +132,7 @@ function AHomePage(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {aLogout}
+                logoPath="/agent"
             />
         }
             
@@ -187,7 +189,7 @@ function AHomePage(){
                 </Modal.Footer>
             </Modal>
             <div className="a-search-flights-div">
-                <h1 style={{color: 'white'}}>Only One Question. Where to?</h1>
+                <h1 style={{color: 'white'}}>Help a Customer Find A Flight Today!</h1>
             <Card style={{boxShadow: '0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%)', width:'50%', marginLeft: 'auto', marginRight: 'auto'}}>
                     <Card.Body>
                         <Card.Title style={{'textAlign': 'left'}}>Search Flights</Card.Title>

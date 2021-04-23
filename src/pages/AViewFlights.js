@@ -136,9 +136,10 @@ function AViewFlights(){
     return (
         <div>
             <NavBar 
-                nav={[['/aViewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'],['/viewTop', 'View Top Customers'], ['#pricing', 'Flight Tracker']]} 
                 loggedIn = {true}
                 logOut = {aLogout}
+                logoPath="/agent"
             />
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>

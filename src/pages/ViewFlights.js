@@ -138,6 +138,7 @@ function ViewFlights(){
                 nav={[['/viewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 loggedIn = {true}
                 logOut = {logout}
+                logoPath = '/'
             />
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>

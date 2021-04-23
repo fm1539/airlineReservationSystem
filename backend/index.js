@@ -469,8 +469,7 @@ app.post('/api/agent/purchaseTickets', function(req, res){
                     }
                 })
             }
-        }
-        
+        }    
     })
 
     let ticketID = 0
@@ -481,13 +480,20 @@ app.post('/api/agent/purchaseTickets', function(req, res){
             connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
             , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
                 console.log(ticketID);
-                if (err) throw err
+                if (err) throw err;
+                
             })
             
             connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
             + `(?, ?, ?, ?, ?, ?,?)`
             , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
-                if (err) res.json({'status': 'invaliderr'})
+                console.log("~~~~~~~~~~")
+                console.log(agent_email);
+                console.log(customer_email)
+                if (err) {
+                    console.log(err);
+                    res.json({'status': 'invaliderr'})
+                }
                 else res.json({'status': 'insertssuccessful'}) 
             })
         }
@@ -496,8 +502,8 @@ app.post('/api/agent/purchaseTickets', function(req, res){
 
 app.get('/api/agent/:agentEmail/viewMyCommission', function(req, res){
     const agent_email = req.params.agentEmail
-    const startDate = req.body.startDate
-    const endDate = req.body.endDate
+    const startDate = req.query.startDate
+    const endDate = req.query.endDate
     const today = new Date();
     const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() - 1)
@@ -522,6 +528,39 @@ app.get('/api/agent/:agentEmail/viewMyCommission', function(req, res){
                             'results': results})
         })
     }
+})
+
+app.get('/api/agent/:agentEmail/topCustomers', function(req, res){
+    const agent_email = req.params.agentEmail
+    var resObj = {}
+    connection.query(`
+    SELECT customer_email, count(customer_email) as  ticketsBought
+    FROM Agent_Purchases NATURAL JOIN Flight
+    where agent_email = ?
+    GROUP BY customer_email
+    order by count(customer_email) desc
+    limit 5
+    `, [agent_email], function (err, results, fields){
+        if (err) throw err
+        else{
+            resObj = {"ticketsBought": results}
+            connection.query(`
+            SELECT customer_email, (sum(base_price)*.1) as commissionReceived
+            FROM Agent_Purchases NATURAL JOIN Flight
+            where agent_email = ?
+            GROUP BY customer_email
+            order by count(customer_email) desc
+            limit 5
+            `, [agent_email], function (err, results, fields){
+                if (err) throw err
+                else{
+                    resObj["commissionReceived"] = results  
+                    console.log(resObj)
+                    res.json(resObj)
+                }
+            })    
+        }
+    })
 })
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible

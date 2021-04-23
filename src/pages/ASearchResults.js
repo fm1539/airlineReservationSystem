@@ -84,14 +84,6 @@ function ASearchResults(){
     const columns = [
         { dataField: "ID", text: 'Ticket ID' },
         { dataField: "flight_number", text: 'Flight #'},
-        { dataField: "airline_name", text: 'Airline Name'},
-        { dataField: "depart_date", text: 'Departure Date'},
-        { dataField: "depart_time", text: 'Departure Time'},
-        { dataField: "arrive_date", text: 'Arrival Date'},
-        { dataField: "arrive_time", text: 'Arrival Time'},
-        { dataField: "depart_airport_name", text: 'Leaving From'},
-        { dataField: "arrive_airport_name", text: 'Arriving To'},
-        { dataField: "base_price", text: 'Base Price'},
     ]
 
     const rowEvents = {
@@ -105,10 +97,11 @@ function ASearchResults(){
     return (
         <div>
             {loggedIn ? <NavBar 
-                nav={[['/aViewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'], ['/viewTop', 'View Top Customers'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {aLogout}
+                logoPath='/agent'
             />
             :
             <NavBar 
@@ -116,6 +109,7 @@ function ASearchResults(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {aLogout}
+                logoPath="/agent"
             />
         }
             <Modal centered show={show} onHide={handleClose}>

@@ -110,6 +110,7 @@ function SearchResults(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
+                logoPath='/'
             />
             :
             <NavBar 
@@ -117,6 +118,7 @@ function SearchResults(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
+                logoPath='/'
             />
         }
             <Modal centered show={show} onHide={handleClose}>

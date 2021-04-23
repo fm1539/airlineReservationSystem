@@ -12,6 +12,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import TrackSpender from './pages/TrackSpending'
 import AHomePage from './pages/AHomePage'
+import ViewTopCustomer from './pages/ViewTopCustomer'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -19,6 +20,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
+import Commision from './pages/Commision'
 
 <Route path="/" exact>
           {JSON.parse(localStorage.getItem('userObj')) ?
@@ -60,7 +62,7 @@ function App() {
             <Redirect to="/" />
           } 
           </Route>
-          <Route path='/searchResults'>
+          <Route path='/searchResults' exact>
             <SearchResults />
           </Route>
           <Route path='/trackSpending' exact>
@@ -72,8 +74,20 @@ function App() {
           <Route path='/agent' exact>
             <AHomePage />
           </Route>
-          <Route path='/agent/searchResults'>
+          <Route path='/aSearchResults' exact>
             <ASearchResults />
+          </Route>
+          <Route path='/commission' exact>
+          {JSON.parse(localStorage.getItem('agentObj')) ?
+            <Commision /> :
+            <Redirect to="/agent" />
+            }
+          </Route>
+          <Route path='/viewTop' exact>
+            {JSON.parse(localStorage.getItem('agentObj')) ? 
+            <ViewTopCustomer />:
+            <Redirect to="/agent" />  
+          }
           </Route>
         </Switch>
       </Router>

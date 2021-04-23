@@ -5,14 +5,13 @@ import {logout, checkLoggedIn} from '../global/Reducer'
 import { Table, Tab, Tabs, Modal, Button, Row, Nav, Col } from 'react-bootstrap';
 import axios from 'axios'
 
-function TrackSpender(){
+function Commision(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false);
-    const [last6Data, set6Data] = useState([]);
-    const [last12Data, set12Data] = useState(0);
+    const [last30, setLast30] = useState({});
     const [fromDate, setFromDate] = useState("")
     const [toDate, setToDate] = useState("")
-    const [rangeData, setRangeData] = useState([])
+    const [rangeData, setRangeData] = useState({})
 
     var fromDateHandler = (event) => {
         setFromDate(event.target.value)
@@ -22,15 +21,12 @@ function TrackSpender(){
         setToDate(event.target.value)
     }
 
-    const last6Handler = (arr) => {
-        set6Data(arr)
-    }
-    const last12Handler = (arr) => {
-        set12Data(arr)
+    const last30Handler = (obj) => {
+        setLast30(obj)
     }
 
-    const rangeDateHandler = (arr) => {
-        setRangeData(arr)
+    const rangeDateHandler = (obj) => {
+        setRangeData(obj)
     }
 
     const obj = {
@@ -40,12 +36,9 @@ function TrackSpender(){
 
     const filterHandler = () => {
         const query = "?startDate=" + fromDate +"&endDate=" + toDate
-        axios.get('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/trackMySpending'+query).then(response => {
-          let arr = [['Month', 'Spent($)']]   
-          response.data.results.forEach((element, i) => {
-            arr.push([obj[response.data.results[i].Month], response.data.results[i].MonthlyTotal])
-          });
-        rangeDateHandler(arr);
+        axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission'+query).then(response => {   
+            console.log(response);
+            rangeDateHandler(response.data.results[0]);
         })
     }
     const handleClose = () => setShow(false);
@@ -59,101 +52,49 @@ function TrackSpender(){
     }
 
     useEffect(()=>{
-        //Past 6 Months
-        axios.get('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/trackMySpending?duration=6').then(response=>{
-            console.log('6',response.data.results);
-            let arr = [['Month', 'Spent($)']]   
-            response.data.results.forEach((element, i) => {
-              arr.push([obj[response.data.results[i].Month], response.data.results[i].MonthlyTotal])
-            });
-            last6Handler(arr)
-        })
-        //Past 12 Months
-        axios.get('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/trackMySpending?duration=12').then(response=>{
-            last12Handler(response.data.results[0].yearTotal)
+        //Last 30 days
+        axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission').then(response=>{
+            console.log(response);
+            last30Handler(response.data.results[0])
         })
     }, [])
 
     return (
         <div>
             <NavBar 
-                nav={[['/viewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/aViewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
-                logoPath = '/'
+                logoPath='/'
             />            
                 <Tab.Container id="left-tabs-example" defaultActiveKey="first">
                     <Row>
                         <Col sm={3}>
                         <Nav variant="pills" className="flex-column">
                             <Nav.Item>
-                            <Nav.Link eventKey="first">Date Range</Nav.Link>
+                            <Nav.Link eventKey="30">Last 30 Days</Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
-                            <Nav.Link eventKey="last6">Last 6 Months</Nav.Link>
-                            </Nav.Item>
-                            <Nav.Item>
-                            <Nav.Link eventKey="last12">Last 12 Months</Nav.Link>
+                            <Nav.Link eventKey="range">Date Range</Nav.Link>
                             </Nav.Item>
                         </Nav>
                         </Col>
                         <Col sm={9}>
                         <Tab.Content>
-                            <Tab.Pane eventKey="first">
+                            <Tab.Pane eventKey="30">
+                                <p>Total Commission: {last30.totalCommission}</p>
+                                <p>Average Commission: {last30.avgCommission}</p>
+                                <p>Tickets Sold: {last30.ticketsSold}</p>
+                            </Tab.Pane>
+                            <Tab.Pane eventKey="range">
                                 <label>From</label>
                                 <input type="date" onChange={fromDateHandler}/>
                                 <label>To</label>
                                 <input type="date" onChange={toDateHandler}/>
                                 <Button onClick={filterHandler}>Filter</Button>
-                                {rangeData.length>0 ?
-                                <Chart
-                                width={400}
-                                height={300}
-                                chartType="ColumnChart"
-                                loader={<div>Loading Chart</div>}
-                                data={rangeData}
-                                options={{
-                                title: 'Ranged Dates',
-                                chartArea: { width: '30%' },
-                                hAxis: {
-                                    title: 'Month',
-                                    minValue: 0,
-                                },
-                                vAxis: {
-                                    title: 'Spent ($)',
-                                },
-                                }}
-                                legendToggle
-                                />
-                                :
-                                null
-                              }
-                                
-                            </Tab.Pane>
-                            <Tab.Pane eventKey="last6">
-                                <Chart
-                                    width={400}
-                                    height={300}
-                                    chartType="ColumnChart"
-                                    loader={<div>Loading Chart</div>}
-                                    data={last6Data}
-                                    options={{
-                                    title: 'Tracking Last 6 months',
-                                    chartArea: { width: '30%' },
-                                    hAxis: {
-                                        title: 'Month',
-                                        minValue: 0,
-                                    },
-                                    vAxis: {
-                                        title: 'Spent ($)',
-                                    },
-                                    }}
-                                    legendToggle
-                                    />
-                            </Tab.Pane>
-                            <Tab.Pane eventKey="last12">
-                              <h1>Total Spending: ${last12Data}</h1>
+                                <p>Total Commission: {rangeData.totalCommission}</p>
+                                <p>Tickets Sold: {last30.ticketsSold}</p>
                             </Tab.Pane>
                         </Tab.Content>
                         </Col>
@@ -248,4 +189,4 @@ function TrackSpender(){
     )
 }
 
-export default TrackSpender
+export default Commision

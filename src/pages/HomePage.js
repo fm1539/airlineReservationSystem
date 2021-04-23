@@ -138,6 +138,7 @@ function HomePage(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
+                logoPath='/'
             />
             :
             <NavBar 
@@ -145,6 +146,7 @@ function HomePage(){
                 accountManagement={[handleShow, handleShow2]}
                 loggedIn = {loggedIn}
                 logOut = {logout}
+                logoPath='/'
             />
         }
             
