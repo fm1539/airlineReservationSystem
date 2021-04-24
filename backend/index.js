@@ -563,6 +563,109 @@ app.get('/api/agent/:agentEmail/topCustomers', function(req, res){
     })
 })
 
+app.post('/api/staff/register', function(req, res){
+    const username = req.body.username
+    const password = req.body.password
+    const first_name = req.body.first_name
+    const last_name = req.body.last_name
+    const date_of_birth = req.body.date_of_birth
+    const airline_name = req.body.airline_name
+    console.log('username', username);
+    console.log('password', password);
+    console.log('fist_name', first_name);
+    console.log('last_name', last_name);
+    console.log('birth', date_of_birth);
+    console.log('airline', airline_name);
+    connection.query("INSERT INTO `Airline_Staff` (`username`,`password`, `first_name`, `last_name`, `date_of_birth`, `airline_name`)" + ` VALUES (?,?,?,?,?,?)
+    `,[username, password, first_name, last_name, date_of_birth, airline_name], function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else res.json({'status': 'registered'})  
+    })
+})
+
+app.post('/api/staff/login', function(req, res){
+    username = req.body.username
+    password = req.body.password
+
+    connection.query(`SELECT username FROM Airline_Staff WHERE username = ? and password = ?`, [username, password],function (err, results, fields){
+        if (err) res.json({'status': 'invaliderr'})
+
+        if (results.length){    //if non empty result
+            console.log(results[0].email);
+            const staffObj = {
+                'username': results[0].username
+            }
+            res.json({'status': 'logged', 'staffObj': staffObj})
+        }
+        else{       // empty result
+            res.json({'status': 'invalidempty'})  
+        }
+    })
+})
+
+
+
+app.get('/api/staff/viewFlights', function(req, res){ 
+    airline_name = req.body.airline_name
+    let today = new Date();
+    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() + 1)
+    const dateIn1Month = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    console.log(dateToday, dateIn1Month, airline_name)
+    connection.query(`
+    select *
+    from allFlights
+    where airline_name = ? and depart_date > "2020-04-23" and depart_date < "2022-04-23"
+    `,[airline_name, dateToday, dateIn1Month] ,function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else {
+            let k = 0
+            for (var j = 0; j < results.length; j++) {
+                var result = [];
+                var  getInformationFromDB = function(j, callback) {
+
+                    connection.query(`SELECT customer_email
+                    from allPurchases
+                    where airline_name =  "Delta"
+                    and flight_number = "87"
+                    and depart_date = "2020-12-23"
+                    and depart_time = "08:26:00"
+                    `, [results[j].airline_name, results[j].flight_number, results[j].depart_date, results[j].depart_time],function (err, results, fields){
+                        if (err) return callback(err)
+                        else {
+                            for (var i = 0; i < results.length; i++) {
+                                result.push(results[i])
+                            }
+                        }
+                        callback(null, result);                        
+                    })
+                }
+                console.log(j)
+                console.log("Call Function");
+                
+                getInformationFromDB(j, function (err, result) {
+                  if (err) console.log("Database error!");
+                  else {
+                      console.log(results[0])
+                      results[k]["customers"] = result
+                      console.log(results[0])
+                      console.log(k)
+                      console.log(result);
+                      if (k === results.length-1){
+                          res.json({'results': results})
+                      }
+                      k = k + 1
+
+                  }
+                });
+                
+            }   
+            
+        }
+        
+    })
+})
+
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
     console.log(req.params.airLineID)               //this prints the users parameter
     const airLineName = req.params.airLineID
