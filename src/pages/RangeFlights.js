@@ -18,7 +18,7 @@ function RangeFlights(){
         arrive_date: ""
     }) 
 
-    const [searchResults, setSearchResults] = useState([1])
+    const [searchResults, setSearchResults] = useState([])
 
     const searchResultsHandler = (arr) => {
         setSearchResults(arr)
@@ -65,31 +65,28 @@ function RangeFlights(){
 
     const searchButtonHandler = () => {
         let obj = {
-            "sourceCity": "",
-            "sourceAirport": "",
-            "destinationCity": "",
-            "destinationAirport": "",
-            "departureDate": ""
+            'airline_name': JSON.parse(localStorage.getItem('staffObj')).airline_name,
+            "startDate": searchInput.depart_date,
+            "endDate": searchInput.arrive_date
         }
-        if (cities.includes(searchInput.leaving)) obj["sourceCity"] = searchInput.leaving;
-        else if (airports.includes(searchInput.leaving)) obj["sourceAirport"] = searchInput.leaving;
+        if (cities.includes(searchInput.leaving)) obj["depart_city"] = searchInput.leaving;
+        else if (airports.includes(searchInput.leaving)) obj["depart_airport_name"] = searchInput.leaving;
 
-        if (cities.includes(searchInput.going)) obj["destinationCity"] = searchInput.going;
-        else if (airports.includes(searchInput.going)) obj["destinationAirport"] = searchInput.going;
-
-        let query = ""
-        
-        for (var key in obj){
-            if (obj[key] !== "")  query += key + "=" + obj[key] + '&'
-        }
-        query = query.slice(0, query.length-1)
-
-        axios.get('http://localhost:8000/api/customer/getAllAirports').then(response => {
+        if (cities.includes(searchInput.going)) obj["arrive_city"] = searchInput.going;
+        else if (airports.includes(searchInput.going)) obj["arrive_airport_name"] = searchInput.going;
+        console.log(obj);
+        axios.post('http://localhost:8000/api/staff/viewFlights', obj).then(response => {
             console.log(response);
+            let arr = []
+            response.data.results.forEach(obj => {
+                arr.push({
+                    ...obj,
+                    ['depart_date']: obj['depart_date'].slice(0, obj['depart_date'].indexOf('T')),
+                    ['arrive_date']: obj['arrive_date'].slice(0, obj['arrive_date'].indexOf('T'))
+                })
+            });
+            searchResultsHandler(arr)
         })
-        
-        window.location = "/searchResults?" + query
-
     }
     
     let loggedIn = false
@@ -98,16 +95,18 @@ function RangeFlights(){
     }
 
     const columns = [
-        { dataField: "ticketID", text: 'Ticket ID' },
-        { dataField: "flight_number", text: 'Flight #'},
-        { dataField: "airline_name", text: 'Airline Name'},
-        // { dataField: "depart_date", text: 'Departure Date'},
-        // { dataField: "depart_time", text: 'Departure Time'},
-        // { dataField: "arrive_date", text: 'Arrival Date'},
-        // { dataField: "arrive_time", text: 'Arrival Time'},
-        // { dataField: "depart_airport_name", text: 'Leaving From'},
-        // { dataField: "arrive_airport_name", text: 'Arriving To'},
-        // { dataField: "base_price", text: 'Base Price'}
+        { dataField: "airline_name", text: 'Airline Name' },
+        { dataField: "depart_airport_name", text: 'Departure Airport'},
+        { dataField: "arrive_airport_name", text: 'Arrival Airport'},
+        { dataField: "depart_city", text: 'Departure City'},
+        { dataField: "arrive_city", text: 'Arrival City'},
+        { dataField: "depart_date", text: 'Departure Date'},
+        { dataField: "arrive_date", text: 'Arrival Date'},
+        { dataField: "depart_time", text: 'Departure Time'},
+        { dataField: "arrive_time", text: 'Arrival Time'},
+        { dataField: "base_price", text: 'Base Price'},
+        { dataField: "flight_number", text: 'Flight Number'},
+        { dataField: "status", text: 'Status'},
     ]
     const data = [
         {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
@@ -173,7 +172,7 @@ function RangeFlights(){
                 {searchResults.length>0 ? 
                 <BootstrapTable class="table-hover"
                 keyField="name"
-                data={data}
+                data={searchResults}
                 columns={columns}
                 pagination={paginationFactory()}
             />

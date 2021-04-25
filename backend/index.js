@@ -587,13 +587,14 @@ app.post('/api/staff/login', function(req, res){
     username = req.body.username
     password = req.body.password
 
-    connection.query(`SELECT username FROM Airline_Staff WHERE username = ? and password = ?`, [username, password],function (err, results, fields){
+    connection.query(`SELECT username, airline_name FROM Airline_Staff WHERE username = ? and password = ?`, [username, password],function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
 
         if (results.length){    //if non empty result
             console.log(results[0].email);
             const staffObj = {
-                'username': results[0].username
+                'username': results[0].username,
+                'airline_name': results[0].airline_name
             }
             res.json({'status': 'logged', 'staffObj': staffObj})
         }
@@ -605,19 +606,49 @@ app.post('/api/staff/login', function(req, res){
 
 
 
-app.get('/api/staff/viewFlights', function(req, res){ 
-    airline_name = req.body.airline_name
+app.post('/api/staff/viewFlights', function(req, res){ 
+    let airline_name = req.body.airline_name
+    console.log('airline_name', airline_name);
+    let startDate = req.body.startDate
+    let endDate = req.body.endDate
+    let depart_airport_name = req.body.depart_airport_name
+    let arrive_airport_name = req.body.arrive_airport_name
+    let depart_city = req.body.depart_city
+    let arrive_city = req.body.arrive_city
+
     let today = new Date();
     const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() + 1)
     const dateIn1Month = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     console.log(dateToday, dateIn1Month, airline_name)
+
+    if (startDate == undefined){ //if we are not give a range, the default range is the next month
+        startDate = dateToday
+        endDate = dateIn1Month
+    }
+    if (depart_airport_name == undefined) depart_airport_name = "%"
+    if (arrive_airport_name == undefined) arrive_airport_name = "%"
+    if (depart_city == undefined) depart_city = "%"
+    if (arrive_city == undefined) arrive_city = "%"
+    // console.log(airline_name)
+    // console.log(startDate)
+    // console.log(endDate)
+    // console.log(depart_airport_name)
+    // console.log(arrive_airport_name)
+    // console.log(depart_city)
+    // console.log(arrive_city)
     connection.query(`
     select *
     from allFlights
-    where airline_name = ? and depart_date > "2020-04-23" and depart_date < "2022-04-23"
-    `,[airline_name, dateToday, dateIn1Month] ,function (err, results, fields){
+    where airline_name = ? and depart_date > ? and depart_date < ?
+    and depart_airport_name LIKE ? 
+    and arrive_airport_name LIKE ? 
+    and depart_city LIKE ?
+    and arrive_city LIKE ?
+    `,[airline_name, startDate, endDate, depart_airport_name, arrive_airport_name, depart_city, arrive_city] ,function (err, results, fields){
+        console.log(results);
         if (err) res.json({'status': 'invalid'})
+        else if(results.length == 0) res.json({'status': 'invalidempty'}) 
         else {
             let k = 0
             for (var j = 0; j < results.length; j++) {
@@ -626,45 +657,111 @@ app.get('/api/staff/viewFlights', function(req, res){
 
                     connection.query(`SELECT customer_email
                     from allPurchases
-                    where airline_name =  "Delta"
-                    and flight_number = "87"
-                    and depart_date = "2020-12-23"
-                    and depart_time = "08:26:00"
+                    where airline_name =  ?
+                    and flight_number = ?
+                    and depart_date = ?
+                    and depart_time = ?
                     `, [results[j].airline_name, results[j].flight_number, results[j].depart_date, results[j].depart_time],function (err, results, fields){
                         if (err) return callback(err)
                         else {
                             for (var i = 0; i < results.length; i++) {
                                 result.push(results[i])
                             }
+                            
                         }
-                        callback(null, result);                        
+                        callback(null, result);  
+                        result = []                      
                     })
                 }
-                console.log(j)
-                console.log("Call Function");
+                //console.log(j)
+                //console.log("Call Function");
                 
                 getInformationFromDB(j, function (err, result) {
                   if (err) console.log("Database error!");
                   else {
-                      console.log(results[0])
+                      //console.log(results[0])
                       results[k]["customers"] = result
-                      console.log(results[0])
-                      console.log(k)
-                      console.log(result);
+                      //console.log(results[0])
+                      //console.log(k)
+                      //console.log(result);
                       if (k === results.length-1){
                           res.json({'results': results})
                       }
                       k = k + 1
-
                   }
-                });
-                
+                }); 
             }   
-            
         }
-        
     })
 })
+
+app.post('/api/staff/createFlight', function(req, res){
+    let airline_name = req.body.airline_name
+    let depart_date = req.body.depart_date
+    let depart_time = req.body.depart_time
+    let arrive_date = req.body.arrive_date
+    let arrive_time = req.body.arrive_time
+    let arrive_airport_name = req.body.arrive_airport_name
+    let depart_airport_name = req.body.depart_airport_name
+    let base_price = req.body.base_price
+    let status = req.body.status
+    console.log('airline_name', airline_name);
+    console.log('depart_date', depart_date);
+    console.log('depart_time', depart_time);
+    console.log('arrive_date', arrive_date);
+    console.log('arrive_time', arrive_time);
+    console.log('arrive airport', arrive_airport_name);
+    console.log('depart_airport_name', depart_airport_name);
+    console.log('base_price', base_price);
+    console.log('status', status);
+
+
+    connection.query("Select * from `Flight` Where 1", function (err, results, fields){
+        if (err) throw err
+        else{
+            let flight_number = results.length+1
+            connection.query("INSERT INTO `Flight` (`airline_name`, `flight_number`, `depart_date`, `depart_time`, `arrive_date`, `arrive_time`, `arrive_airport_name`, `depart_airport_name`, `base_price`, `status`)"
+            + ` Values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+            , [airline_name, flight_number, depart_date,depart_time,arrive_date,arrive_time,arrive_airport_name,depart_airport_name,base_price,status], function (err, results, fields){
+                if (err) res.json({'status': 'invalid'})
+                else res.json({'status': 'inserted'})  
+            })
+        }
+    })
+});
+
+app.post('/api/staff/changeStatus', function(req, res){
+    let newStatus = req.body.newStatus
+    let airline_name = req.body.airline_name
+    let flight_number = req.body.flight_number
+    let depart_date = req.body.depart_date
+    let depart_time = req.body.depart_time
+    
+    connection.query(`
+    UPDATE \`Flight\` SET \`status\` = ? WHERE \`airline_name\` = ? AND \`flight_number\` = ? AND \`depart_date\` = ? AND \`depart_time\` = ? 
+    `,[newStatus,airline_name,flight_number,depart_date,depart_time] ,function(err, results, fields) {
+        if (err) res.json({'status': 'invaliderr'})
+        else res.json({'status': 'updated'})  
+    })
+})
+
+app.post('/api/staff/addAirplane', function(req, res){
+    let airline_name = req.body.airline_name
+    let seats = req.body.seats
+
+    connection.query("Select * from `Airplane` Where 1", function (err, results, fields){
+        if (err) throw err
+        else{
+            let airplaneID = results.length+1
+            connection.query("INSERT INTO `Airplane` (`ID`, `airline_name`, `seats`)"
+            + ` Values(?, ?, ?)`
+            , [airplaneID, airline_name, seats], function (err, results, fields){
+                if (err) res.json({'status': 'invalid'})
+                else res.json({'status': 'inserted'})  
+            })
+        }
+    })
+});
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
     console.log(req.params.airLineID)               //this prints the users parameter
@@ -672,6 +769,13 @@ app.get('/api/:airLineID', function(req, res){      // the colon makes it so its
     const obj = { airLineName: database[airLineName] }
     res.json(obj)                  
     //res.send(req.params.airLineID)   //prints the user's parameter to their browser //res is "resposne you want to send back"
+})
+
+app.get('/api/staff/getAllAirports', function(req, res){
+    connection.query(`select * from Airport`, function(err, results, fields) {
+        if (err) res.json({'status': 'invaliderr'})
+        else res.json({'results': results})
+    })
 })
 
 // app.get('/md', function(request, response){   //goes to route /md 

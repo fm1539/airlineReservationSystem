@@ -10,19 +10,117 @@ import BootstrapTable from 'react-bootstrap-table-next'
 function SHomePage(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
+    const [airports, setAirports] = useState([])
+    const [allFlights, setAllFlights] = useState([])
+
+    const allFlightsHandler = (arr) => {
+        console.log(arr);
+        setAllFlights(arr)
+    }
+
+    const airportHandler = (arr) => {
+        setAirports(arr)
+    }
+    const [flight, setFlight] = useState({
+        departDate: "", departTime: "", arriveDate: "" , arriveTime: "",
+        arriveAirport: "", departAirport: "", basePrice: "", status: ""
+    })
+
+    const flightChangeHandler= (event) => {
+        setFlight({
+            ...flight,
+            [event.target.name]: event.target.value
+        })
+    }
+
+    useEffect(()=> {
+        console.log(flight);
+        console.log(flight.arriveAirport)
+        console.log(airports)
+        if (flight.arriveAirport !== ""){
+            console.log('here');
+            let index = 0
+            for (let i = 0; i < airports.length; i++){
+                if (airports[i][0] === flight.arriveAirport){
+                    index = i
+                    break
+                }
+            }
+            console.log(index)
+            let newAirports = [...airports];
+            for (let i = 0; i < airports.length; i++){
+                if (newAirports[i][0] !== flight.departAirport){
+                    newAirports[i][1] = true
+                    newAirports[i][2] = true
+                }
+            }
+            newAirports[index][1] = false;
+            setAirports(newAirports);
+            // airports[index][1] = false
+        }
+
+        if (flight.departAirport !== ""){
+            console.log('here');
+            let index = 0
+            for (let i = 0; i < airports.length; i++){
+                if (airports[i][0] === flight.departAirport){
+                    index = i
+                    break
+                }
+            }
+            console.log(index)
+            let newAirports = [...airports];
+            for (let i = 0; i < airports.length; i++){
+                if (newAirports[i][0] !== flight.arriveAirport){
+                    newAirports[i][1] = true
+                    newAirports[i][2] = true
+                }
+            }
+            newAirports[index][2] = false;
+            setAirports(newAirports);
+            // airports[index][1] = false
+        }
+    }, [flight])
  
     const [loginEvent, setLoginEvent] = useState({
         username: "",
         password: "",
     })
+    let loggedIn = false
+    if (sCheckLoggedIn()){
+        loggedIn = true
+    }
 
-
-    // useEffect(()=> {
-    //     axios.get('http://localhost:8000/api/staff/viewFlights').then( response => {
-    //         console.log(response.data.results);
-    //         airportHandler(response.data.results)
-    //     })
-    // }, [])
+    useEffect(()=> {
+        if (loggedIn){
+            const obj ={
+                'airline_name': JSON.parse(localStorage.getItem('staffObj')).airline_name
+            }
+            console.log('obj', obj);
+            axios.post('http://localhost:8000/api/staff/viewFlights', obj).then(response =>{
+                console.log('viewmyflights', response);
+                let arr = []
+                response.data.results.forEach(obj => {
+                    arr.push({
+                        ...obj,
+                        ['depart_date']: obj['depart_date'].slice(0, obj['depart_date'].indexOf('T')),
+                        ['arrive_date']: obj['arrive_date'].slice(0, obj['arrive_date'].indexOf('T'))
+                    })
+                });
+                allFlightsHandler(arr)
+            })
+        
+            axios.get('http://localhost:8000/api/staff/getAllAirports').then( response => {
+                console.log(response.data.results);
+                let arr = []
+                response.data.results.forEach(airport => {
+                    arr.push([airport.name, true, true])
+                });
+                console.log(arr)
+                airportHandler(arr)
+            })
+        }
+    }, [])
 
     const loginChangeHandler = (event) => {
         setLoginEvent({
@@ -63,24 +161,22 @@ function SHomePage(){
     const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
 
+
     let custInfo = <p>Loading...</p>
 
-    let loggedIn = false
-    if (sCheckLoggedIn()){
-        loggedIn = true
-    }
-
     const columns = [
-        { dataField: "ticketID", text: 'Ticket ID' },
-        { dataField: "flight_number", text: 'Flight #'},
-        { dataField: "airline_name", text: 'Airline Name'},
-        // { dataField: "depart_date", text: 'Departure Date'},
-        // { dataField: "depart_time", text: 'Departure Time'},
-        // { dataField: "arrive_date", text: 'Arrival Date'},
-        // { dataField: "arrive_time", text: 'Arrival Time'},
-        // { dataField: "depart_airport_name", text: 'Leaving From'},
-        // { dataField: "arrive_airport_name", text: 'Arriving To'},
-        // { dataField: "base_price", text: 'Base Price'}
+        { dataField: "airline_name", text: 'Airline Name' },
+        { dataField: "depart_airport_name", text: 'Departure Airport'},
+        { dataField: "arrive_airport_name", text: 'Arrival Airport'},
+        { dataField: "depart_city", text: 'Departure City'},
+        { dataField: "arrive_city", text: 'Arrival City'},
+        { dataField: "depart_date", text: 'Departure Date'},
+        { dataField: "arrive_date", text: 'Arrival Date'},
+        { dataField: "depart_time", text: 'Departure Time'},
+        { dataField: "arrive_time", text: 'Arrival Time'},
+        { dataField: "base_price", text: 'Base Price'},
+        { dataField: "flight_number", text: 'Flight Number'},
+        { dataField: "status", text: 'Status'},
     ]
     const data = [
         {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
@@ -88,6 +184,10 @@ function SHomePage(){
         {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
         {ticketID: 1, flight_number: 1, airline_name: 'Delta'}
     ]
+
+    const handler =(event)=>{
+        console.log(event.target.value)
+    }
 
     return (
         <React.Fragment>
@@ -190,9 +290,10 @@ function SHomePage(){
                 <div>
                     <Sidebar />
                     <div style={{marginLeft: '270px'}}>
+                        
                         <BootstrapTable class="table-hover"
                             keyField="name"
-                            data={data}
+                            data={allFlights}
                             columns={columns}
                             pagination={paginationFactory()}
                         />

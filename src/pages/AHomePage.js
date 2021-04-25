@@ -164,7 +164,7 @@ function AHomePage(){
             </Modal>
             <Modal show={show2} onHide={handleClose2}>
                 <Modal.Header closeButton>
-                <Modal.Title>al</Modal.Title>
+                <Modal.Title>Sign In</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <form>
