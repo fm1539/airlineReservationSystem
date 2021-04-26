@@ -13,21 +13,10 @@ function Commision(){
     const [toDate, setToDate] = useState("")
     const [rangeData, setRangeData] = useState({})
 
-    var fromDateHandler = (event) => {
-        setFromDate(event.target.value)
-    }
-    
-    var toDateHandler = (event) => {
-        setToDate(event.target.value)
-    }
-
-    const last30Handler = (obj) => {
-        setLast30(obj)
-    }
-
-    const rangeDateHandler = (obj) => {
-        setRangeData(obj)
-    }
+    var fromDateHandler = (event) => setFromDate(event.target.value)
+    var toDateHandler = (event) => setToDate(event.target.value)
+    const last30Handler = (obj) => setLast30(obj)
+    const rangeDateHandler = (obj) => setRangeData(obj)
 
     const obj = {
       1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'June',
@@ -36,27 +25,20 @@ function Commision(){
 
     const filterHandler = () => {
         const query = "?startDate=" + fromDate +"&endDate=" + toDate
-        axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission'+query).then(response => {   
-            console.log(response);
-            rangeDateHandler(response.data.results[0]);
-        })
+        axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission'+query)
+        .then(response => rangeDateHandler(response.data.results[0]));
     }
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
     const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
     let loggedIn = false
-    if (checkLoggedIn()){
-        loggedIn = true
-    }
+    if (checkLoggedIn()) loggedIn = true
 
     useEffect(()=>{
         //Last 30 days
-        axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission').then(response=>{
-            console.log(response);
-            last30Handler(response.data.results[0])
-        })
+        axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission')
+        .then(response=> last30Handler(response.data.results[0]))
     }, [])
 
     return (

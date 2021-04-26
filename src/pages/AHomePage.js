@@ -22,28 +22,14 @@ function AHomePage(){
         depart_date: ""
     }) 
 
-
     useEffect(()=> {
-        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => {
-            console.log(response.data.results);
-            airportHandler(response.data.results)
-        })
-
-        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => {
-            console.log(response.data);
-            cityHandler(response.data.results)
-        }) 
+        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => airportHandler(response.data.results))
+        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => cityHandler(response.data.results)) 
     }, [])
 
-    
+    const cityHandler =(arr) => setCities(arr)
 
-    const cityHandler =(arr) => {
-        setCities(arr)
-    }
-
-    const airportHandler = (arr) => {
-        setAirports(arr)
-    }
+    const airportHandler = (arr) => setAirports(arr)
 
     const loginChangeHandler = (event) => {
         setLoginEvent({
@@ -84,9 +70,7 @@ function AHomePage(){
 
     }
 
-    const loginButtonHandler = () => {
-        aLogin(loginEvent, '/agent')
-    }
+    const loginButtonHandler = () => aLogin(loginEvent, '/agent')
 
     const [registerEvent, setRegisterEvent] = useState({
         email: "", 
@@ -100,9 +84,7 @@ function AHomePage(){
         })
     }
 
-    const registerButtonHandler = () => {
-        aRegister(registerEvent, '/')
-    }
+    const registerButtonHandler = () => aRegister(registerEvent, '/')
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -113,9 +95,7 @@ function AHomePage(){
     let custInfo = <p>Loading...</p>
 
     let loggedIn = false
-    if (aCheckLoggedIn()){
-        loggedIn = true
-    }
+    if (aCheckLoggedIn()) loggedIn = true
 
     return (
         <React.Fragment>

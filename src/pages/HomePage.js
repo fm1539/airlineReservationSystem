@@ -24,41 +24,24 @@ function HomePage(){
 
 
     useEffect(()=> {
-        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => {
-            console.log(response.data.results);
-            airportHandler(response.data.results)
-        })
-
-        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => {
-            console.log(response.data);
-            cityHandler(response.data.results)
-        }) 
+        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => airportHandler(response.data.results))
+        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => cityHandler(response.data.results)) 
     }, [])
 
-    
-
-    const cityHandler =(arr) => {
-        setCities(arr)
-    }
-
-    const airportHandler = (arr) => {
-        setAirports(arr)
-    }
-
+    const cityHandler =(arr) => setCities(arr)
+    const airportHandler = (arr) => setAirports(arr)
     const loginChangeHandler = (event) => {
         setLoginEvent({
             ...loginEvent, 
             [event.target.name]: event.target.value
         })
     }
-
     const searchChangeHandler = (event) => {
         setSearchInput({
             ...searchInput,
             [event.target.name]: event.target.value
         })
     }
-
     const searchButtonHandler = () => {
         let obj = {
             "sourceCity": "",
@@ -79,14 +62,12 @@ function HomePage(){
             if (obj[key] !== "")  query += key + "=" + obj[key] + '&'
         }
         query = query.slice(0, query.length-1)
-        
         window.location = "/searchResults?" + query
 
     }
 
-    const loginButtonHandler = () => {
-        login(loginEvent, '/')
-    }
+    const loginButtonHandler = () => login(loginEvent, '/')
+    
 
     const [registerEvent, setRegisterEvent] = useState({
         email: "", name: "", password: "", building_number: "",
@@ -101,9 +82,7 @@ function HomePage(){
         })
     }
 
-    const registerButtonHandler = () => {
-        register(registerEvent, '/')
-    }
+    const registerButtonHandler = () => register(registerEvent, '/')
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -127,9 +106,7 @@ function HomePage(){
     // }
 
     let loggedIn = false
-    if (checkLoggedIn()){
-        loggedIn = true
-    }
+    if (checkLoggedIn()) loggedIn = true
 
     return (
         <React.Fragment>

@@ -29,9 +29,7 @@ function ViewFlights(){
         })
     }
 
-    const rowInfoHandler = (info) => {
-        setRowInfo(info)
-    }
+    const rowInfoHandler = (info) => setRowInfo(info)
     const [show, setShow] = useState(false)
     const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
@@ -39,15 +37,9 @@ function ViewFlights(){
     const today = new Date();
     const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     
-    const flightsHandler = (arr) => {
-        setFlights(arr)
-    }
-    const pastHandler = (arr) => {
-        setPast(arr)
-    }
-    const futureHandler = (arr) => {
-        setFuture(arr)
-    }
+    const flightsHandler = (arr) => setFlights(arr)
+    const pastHandler = (arr) => setPast(arr)
+    const futureHandler = (arr) => setFuture(arr)
 
     useEffect(() => {
         let pastArr = []
@@ -57,12 +49,8 @@ function ViewFlights(){
             const departYear = departDate.slice(0, departDate.indexOf('-'))
             const departMonth = departDate.slice(departDate.indexOf('-') + 1, departDate.indexOf('-') + 3)
             const departDay = departDate.slice(departDate.indexOf('-') + 4, departDate.length-1)
-            if (parseInt(departYear) > today.getFullYear) {
-                futureArr.push(flight)
-            }
-            else if(parseInt(departYear) < parseInt(today.getFullYear())) {
-                pastArr.push(flight)
-            }
+            if (parseInt(departYear) > today.getFullYear) futureArr.push(flight)
+            else if(parseInt(departYear) < parseInt(today.getFullYear())) pastArr.push(flight)
             else{
                 if (parseInt(departMonth) < parseInt(today.getMonth())) {
                     pastArr.push(flight) 

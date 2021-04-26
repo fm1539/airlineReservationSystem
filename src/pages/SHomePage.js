@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import NavBar from '../shared/NavBar'
 import axios from 'axios'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col} from 'react-bootstrap'
+import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
 import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../global/Reducer'
 import Sidebar from '../shared/Sidebar'
 import paginationFactory from 'react-bootstrap-table2-paginator'
@@ -12,20 +12,19 @@ function SHomePage(){
     const [show2, setShow2] = useState(false)
     const [airports, setAirports] = useState([])
     const [allFlights, setAllFlights] = useState([])
-
-    const allFlightsHandler = (arr) => {
-        console.log(arr);
-        setAllFlights(arr)
-    }
-
-    const airportHandler = (arr) => {
-        setAirports(arr)
-    }
+    const [statusPopup, setStatusPopup] = useState(false)
+    const [status, setStatus] = useState({})
     const [flight, setFlight] = useState({
         departDate: "", departTime: "", arriveDate: "" , arriveTime: "",
         arriveAirport: "", departAirport: "", basePrice: "", status: ""
     })
-
+    
+    const rowInfoHandler = (obj) => setStatus(obj)
+    const showChangeStatusPopup = () => setStatusPopup(true)
+    const hideChangeStatusPopup = () => setStatusPopup(false)
+    const allFlightsHandler = (arr) => setAllFlights(arr)
+    const airportHandler = (arr) => setAirports(arr)
+    
     const flightChangeHandler= (event) => {
         setFlight({
             ...flight,
@@ -34,11 +33,7 @@ function SHomePage(){
     }
 
     useEffect(()=> {
-        console.log(flight);
-        console.log(flight.arriveAirport)
-        console.log(airports)
         if (flight.arriveAirport !== ""){
-            console.log('here');
             let index = 0
             for (let i = 0; i < airports.length; i++){
                 if (airports[i][0] === flight.arriveAirport){
@@ -46,7 +41,6 @@ function SHomePage(){
                     break
                 }
             }
-            console.log(index)
             let newAirports = [...airports];
             for (let i = 0; i < airports.length; i++){
                 if (newAirports[i][0] !== flight.departAirport){
@@ -60,7 +54,6 @@ function SHomePage(){
         }
 
         if (flight.departAirport !== ""){
-            console.log('here');
             let index = 0
             for (let i = 0; i < airports.length; i++){
                 if (airports[i][0] === flight.departAirport){
@@ -68,7 +61,6 @@ function SHomePage(){
                     break
                 }
             }
-            console.log(index)
             let newAirports = [...airports];
             for (let i = 0; i < airports.length; i++){
                 if (newAirports[i][0] !== flight.arriveAirport){
@@ -87,9 +79,7 @@ function SHomePage(){
         password: "",
     })
     let loggedIn = false
-    if (sCheckLoggedIn()){
-        loggedIn = true
-    }
+    if (sCheckLoggedIn()) loggedIn = true
 
     useEffect(()=> {
         if (loggedIn){
@@ -111,12 +101,10 @@ function SHomePage(){
             })
         
             axios.get('http://localhost:8000/api/staff/getAllAirports').then( response => {
-                console.log(response.data.results);
                 let arr = []
                 response.data.results.forEach(airport => {
                     arr.push([airport.name, true, true])
                 });
-                console.log(arr)
                 airportHandler(arr)
             })
         }
@@ -129,11 +117,8 @@ function SHomePage(){
         })
     }
 
-    const loginButtonHandler = () => {
-        console.log(loginEvent);
-        sLogin(loginEvent, '/staff')
-    }
-
+    const loginButtonHandler = () => sLogin(loginEvent, '/staff')
+    
     const [registerEvent, setRegisterEvent] = useState({
         username: "", 
         password: "",
@@ -150,17 +135,24 @@ function SHomePage(){
         })
     }
 
-    const registerButtonHandler = () => {
-        console.log(registerEvent);
-        sRegister(registerEvent, '/staff')
-    }
-
+    const registerButtonHandler = () => sRegister(registerEvent, '/staff')
+    
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
     const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
 
+    const statusChangeHandler = (event) => {
+        setStatus({
+            ...status,
+            [event.target.name]: event.target.value
+        })
+    }
+
+    const changeButtonHandler = () => {
+        axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => window.location = '/staff')   
+    }
 
     let custInfo = <p>Loading...</p>
 
@@ -185,9 +177,18 @@ function SHomePage(){
         {ticketID: 1, flight_number: 1, airline_name: 'Delta'}
     ]
 
-    const handler =(event)=>{
-        console.log(event.target.value)
-    }
+    const handler =(event) => console.log(event.target.value)
+    
+    const changeStatus = {
+        onClick: (e, row, rowIndex) => {
+          console.log(allFlights);
+          //save specific row info to a state
+          rowInfoHandler(row)
+
+          //have modal pop up to add review and submit
+          showChangeStatusPopup()
+        }
+    };
 
     return (
         <React.Fragment>
@@ -276,6 +277,46 @@ function SHomePage(){
                 </Button>
                 </Modal.Footer>
             </Modal>
+            <Modal show={statusPopup} onHide={hideChangeStatusPopup}>
+                <Modal.Header closeButton>
+                <Modal.Title>Change Status</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                <Tabs defaultActiveKey="customers" id="uncontrolled-tab-example">
+                    <Tab eventKey="customers" title="Customers">
+                        {status!=={} ?
+                            status.customers.map((customer)=>{
+                                return (
+                                    <p>{customer}</p>
+                                )
+                            })
+                        :
+                        null
+                        }
+                    </Tab>
+                    <Tab eventKey="status" title="Change Status">
+                        <form>
+                            <label>New Status</label>
+                            <br/>
+                            <select id="changeStatus" name="status" onChange={statusChangeHandler}>
+                                <option></option>
+                                <option value="ontime">On Time</option>
+                                <option value="delayed">Delayed</option>
+                            </select>
+                        </form>
+
+                    </Tab>
+            </Tabs>
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={hideChangeStatusPopup}>
+                    Close
+                </Button>
+                <Button variant="primary" onClick={changeButtonHandler}>
+                    Change
+                </Button>
+                </Modal.Footer>
+            </Modal>
 
             {/* <ProSidebar>
                 <Menu iconShape="square">
@@ -290,23 +331,20 @@ function SHomePage(){
                 <div>
                     <Sidebar />
                     <div style={{marginLeft: '270px'}}>
-                        
                         <BootstrapTable class="table-hover"
                             keyField="name"
                             data={allFlights}
                             columns={columns}
                             pagination={paginationFactory()}
+                            rowEvents = { changeStatus }
                         />
                     </div>
-                    
                 </div>
                 :
                 <div style={{marginLeft: '270px'}}>
                     <h1 style={{textAlign: 'left'}}>Please Log In</h1>
                 </div>
             }
-
-            
         </React.Fragment>
     )
 }

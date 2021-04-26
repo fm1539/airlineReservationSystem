@@ -11,10 +11,11 @@ import ACheckoutForm from './pages/APurchase'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TrackSpender from './pages/TrackSpending'
-import AHomePage from './pages/AHomePage'
+impoHomePage from './pages/AHomePage'
 import SHomePage from './pages/SHomePage'
 import ViewTopCustomer from './pages/ViewTopCustomer'
 import About from './pages/About'
+import AirplaneConfirmation from './pages/AirplaneConfirmation'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -102,6 +103,12 @@ function App() {
             {JSON.parse(localStorage.getItem('staffObj')) ? 
               <RangeFlights />:
               <Redirect to="/staff" />  
+            }
+          </Route>
+          <Route path='/confirmation' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ? 
+            <AirplaneConfirmation />:
+            <Redirect to="/staff" />
             }
           </Route>
         </Switch>

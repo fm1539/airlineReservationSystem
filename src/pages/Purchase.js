@@ -30,9 +30,7 @@ var CheckoutForm = () => {
   }
 
   var handleToken = async (token, addresses) => {
-    await axios.post('http://localhost:8000/api/customer/purchaseTickets', { obj, token }).then(response=>{
-        console.log(response);
-    })
+    await axios.post('http://localhost:8000/api/customer/purchaseTickets', { obj, token }).then(response=>console.log(response))
     // const { status } = response.data;
     // console.log("Response:", response.data);
     // if (status === "success") {

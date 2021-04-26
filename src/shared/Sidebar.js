@@ -13,12 +13,45 @@ function Sidebar(){
         arriveAirport: "", departAirport: "", basePrice: "", status: ""
     })
 
+    const [airplane, setAirplane] = useState({
+        airline_name: "",
+        seats: ""
+    })
+
+    const [newAirport, setNewAirport] = useState({
+        airportName: "",
+        airportCity: ""
+    })
+
+    const airplaneChangeHandler = (event) => {
+        setAirplane({
+            ...airplane,
+            [event.target.name]: event.target.value
+        })
+    }
+
     const flightChangeHandler= (event) => {
         setFlight({
             ...flight,
             [event.target.name]: event.target.value
         })
     }
+    
+    const airportChangeHandler = (event) => {
+        setNewAirport({
+            ...newAirport,
+            [event.target.name]: event.target.value
+        })
+    }
+
+    const [showAddAirplane, setShowAddAirplane] = useState(false)
+    const [showAddAirport, setShowAddAirport] = useState(false)
+
+    const handleShowAddAirplane = () => setShowAddAirplane(true)
+    const handleCloseAddAirplane = () => setShowAddAirplane(false)
+
+    const handleShowAddAirport = () => setShowAddAirport(true)
+    const handleCloseAddAirport = () => setShowAddAirport(false)
 
     const createHandler = () => {
         const obj = {
@@ -32,41 +65,44 @@ function Sidebar(){
             base_price: flight.basePrice,
             status: flight.status
         }
-        axios.post("http://localhost:8000/api/staff/createFlight", obj).then(response => {
-            console.log(response);
-            window.location = '/staff'
-        })
+        axios.post("http://localhost:8000/api/staff/createFlight", obj).then(response => window.location = '/staff')
     }
 
+    const addAirplaneHandler = () => {
+        let obj = {
+            airline_name: JSON.parse(localStorage.getItem('staffObj')).airline_name,
+            seats: airplane.seats
+        }
+        axios.post("http://localhost:8000/api/staff/addAirplane", obj).then(response => window.location = '/confirmation')
+    }
+
+    const addAirportHandler = () => {
+        let obj = {
+            airportName: newAirport.airportName,
+            airportCity: newAirport.airportCity
+        }
+        axios.post("http://localhost:8000/api/staff/addAirport", obj).then(response => window.location = "/staff")   
+    }
+    
     const [airports, setAirports] = useState([])
     const [showCreate, setShowCreate] = useState(false)
     const handleCloseCreate = () => setShowCreate(false)
     const handleShowCreate = () => setShowCreate(true)
 
-    const airportHandler = (arr) => {
-        setAirports(arr)
-    }
+    const airportHandler = (arr) => setAirports(arr)
     
     useEffect(()=> {
         axios.get('http://localhost:8000/api/staff/getAllAirports').then( response => {
-            console.log(response.data.results);
             let arr = []
             response.data.results.forEach(airport => {
                 arr.push([airport.name, true, true])
             });
-            console.log(arr)
             airportHandler(arr)
         })
-        
     }, [])
 
-
     useEffect(()=> {
-        console.log(flight);
-        console.log(flight.arriveAirport)
-        console.log(airports)
         if (flight.arriveAirport !== ""){
-            console.log('here');
             let index = 0
             for (let i = 0; i < airports.length; i++){
                 if (airports[i][0] === flight.arriveAirport){
@@ -74,7 +110,6 @@ function Sidebar(){
                     break
                 }
             }
-            console.log(index)
             let newAirports = [...airports];
             for (let i = 0; i < airports.length; i++){
                 if (newAirports[i][0] !== flight.departAirport){
@@ -88,7 +123,6 @@ function Sidebar(){
         }
 
         if (flight.departAirport !== ""){
-            console.log('here');
             let index = 0
             for (let i = 0; i < airports.length; i++){
                 if (airports[i][0] === flight.departAirport){
@@ -96,7 +130,6 @@ function Sidebar(){
                     break
                 }
             }
-            console.log(index)
             let newAirports = [...airports];
             for (let i = 0; i < airports.length; i++){
                 if (newAirports[i][0] !== flight.arriveAirport){
@@ -119,6 +152,8 @@ function Sidebar(){
                 <SidebarContent>
                 <ProSidebar>
                 <Button onClick={handleShowCreate}>Create New Flight +</Button>
+                <Button onClick={handleShowAddAirplane}>Add Airplane +</Button>
+                <Button onClick={handleShowAddAirport}>Add Airport +</Button>
                         <Modal centered show={showCreate} onHide={handleCloseCreate}>
                             <Modal.Header closeButton>
                             <Modal.Title>Create a New Flight</Modal.Title>
@@ -192,6 +227,55 @@ function Sidebar(){
                             </Button>
                             </Modal.Footer>
                         </Modal>
+                        <Modal centered show={showAddAirplane} onHide={handleCloseAddAirplane}>
+                            <Modal.Header closeButton>
+                            <Modal.Title>Add Airplane</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                <form>
+                                    <label>Number of Seats</label>
+                                    <br/>
+                                        <input type="text" name="seats" onChange={airplaneChangeHandler} required/>
+                                    <br/>
+                                    <br/>
+                                </form>
+                            </Modal.Body>
+                            <Modal.Footer>
+                            <Button variant="secondary" onClick={handleCloseAddAirplane}>
+                                Close
+                            </Button>
+                            <Button variant="primary" onClick={addAirplaneHandler}>
+                                Create
+                            </Button>
+                            </Modal.Footer>
+                        </Modal>
+                        <Modal centered show={showAddAirport} onHide={handleCloseAddAirport}>
+                            <Modal.Header closeButton>
+                            <Modal.Title>Add Airport</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>
+                                <form>
+                                    <label>Airport Ticker</label>
+                                    <br/>
+                                    <input type="text" name="airportName" onChange={airportChangeHandler} required/>
+                                    <br/>
+                                    <br/>
+                                    <label>City of Airport</label>
+                                    <br/>
+                                    <input type="text" name="airportCity" onChange={airportChangeHandler} required/>
+                                    <br/>
+                                    <br/>
+                                </form>
+                            </Modal.Body>
+                            <Modal.Footer>
+                            <Button variant="secondary" onClick={handleCloseAddAirport}>
+                                Close
+                            </Button>
+                            <Button variant="primary" onClick={addAirportHandler}>
+                                Create
+                            </Button>
+                            </Modal.Footer>
+                        </Modal>
                 <Menu iconShape="square">
                     <SubMenu title="View Flights" >
                     <MenuItem>
@@ -216,7 +300,7 @@ function Sidebar(){
                     Copyright
                 </SidebarFooter>
             </ProSidebar>            
-            </React.Fragment>
+        </React.Fragment>
     )
 }
 

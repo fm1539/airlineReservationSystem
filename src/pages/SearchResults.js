@@ -18,17 +18,12 @@ function SearchResults(){
         password: ""
     })
 
-    const flightHandler = (arr) => {
-        setFlights(arr)
-        console.log(flights);
-    }
+    const flightHandler = (arr) => setFlights(arr)
+    
 
     useEffect(async ()=>{
         var search = window.location.search
-        // console.log(JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}'))
-        console.log(search);
         const response = await axios.get('http://localhost:8000/api/customer/searchForFlights'+search)
-        console.log(response);
         if (response.data.status !== 'invalidempty') flightHandler(response.data.flightsArr);
     }, [])
 
@@ -39,10 +34,7 @@ function SearchResults(){
         })
     }
 
-    const loginButtonHandler = () => {
-        console.log(loginEvent)
-        login(loginEvent, '/searchResults'+window.location.search)
-    }
+    const loginButtonHandler = () => login(loginEvent, '/searchResults'+window.location.search)
 
     const [registerEvent, setRegisterEvent] = useState({
         email: "", name: "", password: "", building_number: "",
@@ -57,20 +49,13 @@ function SearchResults(){
         })
     }
 
-    const registerButtonHandler = () => {
-        register(registerEvent, '/searchResults')
-    }
-
+    const registerButtonHandler = () => register(registerEvent, '/searchResults')
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
     const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
-
     let loggedIn = false
-    if (checkLoggedIn()){
-        loggedIn = true
-    }
+    if (checkLoggedIn()) loggedIn = true
 {/* <td>{flight.ticketID}</td>
 <td>{flight.flight_number}</td>
 <td>{flight.airline_name}</td>
@@ -97,7 +82,6 @@ function SearchResults(){
 
     const rowEvents = {
         onClick: (e, row, rowIndex) => {
-          console.log(row);
           if (loggedIn) window.location = '/purchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price    
           else handleShow()
         }

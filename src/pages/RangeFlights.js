@@ -17,12 +17,25 @@ function RangeFlights(){
         depart_date: "",
         arrive_date: ""
     }) 
+    const [statusPopup, setStatusPopup] = useState(false)
+    const [status, setStatus] = useState({})
+
+    const rowInfoHandler = (obj) => setStatus(obj)
+
+    const showChangeStatusPopup = () => setStatusPopup(true)
+    
+    const hideChangeStatusPopup = () => setStatusPopup(false)
+
+    const statusChangeHandler = (event) => {
+        setStatus({
+            ...status,
+            [event.target.name]: event.target.value
+        })
+    }
 
     const [searchResults, setSearchResults] = useState([])
 
-    const searchResultsHandler = (arr) => {
-        setSearchResults(arr)
-    }
+    const searchResultsHandler = (arr) => setSearchResults(arr)
 
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
@@ -43,24 +56,27 @@ function RangeFlights(){
         })
     }
 
-    const cityHandler =(arr) => {
-        setCities(arr)
+    const cityHandler =(arr) => setCities(arr)
+    const airportHandler = (arr) => setAirports(arr)
+    
+    const changeButtonHandler = () => {
+        axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => window.location = '/staff')   
     }
 
-    const airportHandler = (arr) => {
-        setAirports(arr)
-    }
+    const changeStatus = {
+        onClick: (e, row, rowIndex) => {
+          //save specific row info to a state
+          rowInfoHandler(row)
+
+          //have modal pop up to add review and submit
+          showChangeStatusPopup()
+        }
+      };
 
     useEffect(()=> {
-        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => {
-            console.log(response.data.results);
-            airportHandler(response.data.results)
-        })
+        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => airportHandler(response.data.results))
 
-        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => {
-            console.log(response.data);
-            cityHandler(response.data.results)
-        }) 
+        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => cityHandler(response.data.results)) 
     }, [])
 
     const searchButtonHandler = () => {
@@ -74,9 +90,7 @@ function RangeFlights(){
 
         if (cities.includes(searchInput.going)) obj["arrive_city"] = searchInput.going;
         else if (airports.includes(searchInput.going)) obj["arrive_airport_name"] = searchInput.going;
-        console.log(obj);
         axios.post('http://localhost:8000/api/staff/viewFlights', obj).then(response => {
-            console.log(response);
             let arr = []
             response.data.results.forEach(obj => {
                 arr.push({
@@ -90,9 +104,8 @@ function RangeFlights(){
     }
     
     let loggedIn = false
-    if (sCheckLoggedIn()){
-        loggedIn = true
-    }
+    if (sCheckLoggedIn()) loggedIn = true
+    
 
     const columns = [
         { dataField: "airline_name", text: 'Airline Name' },
@@ -115,9 +128,7 @@ function RangeFlights(){
         {ticketID: 1, flight_number: 1, airline_name: 'Delta'}
     ]
     let pT = "200px"
-    if (searchResults.length > 0){
-        pT = '100px'
-    }
+    if (searchResults.length > 0) pT = '100px'
 
     return (
         <div>
@@ -128,6 +139,31 @@ function RangeFlights(){
                 logOut = {sLogout}
                 logoPath="/staff"
             />
+            <Modal show={statusPopup} onHide={hideChangeStatusPopup}>
+                <Modal.Header closeButton>
+                <Modal.Title>Change Status</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <form>
+                        <label>New Status</label>
+                        <br/>
+                        <select id="changeStatus" name="status" onChange={statusChangeHandler}>
+                            <option></option>
+                            <option value="ontime">On Time</option>
+                            <option value="delayed">Delayed</option>
+                        </select>
+                    </form>
+                </Modal.Body>
+                <Modal.Footer>
+                <Button variant="secondary" onClick={hideChangeStatusPopup}>
+                    Close
+                </Button>
+                <Button variant="primary" onClick={changeButtonHandler}>
+                    Change
+                </Button>
+                </Modal.Footer>
+            </Modal>
+
             <Sidebar />
             <div style={{marginLeft: '270px', paddingTop: pT}}>
                 <Card style={{boxShadow: '0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%)', width:'50%', marginLeft: 'auto', marginRight: 'auto'}}>
@@ -144,7 +180,7 @@ function RangeFlights(){
                                 name="leaving"
                                 onChange={searchChangeHandler}
                                 aria-describedby="basic-addon1"
-                                />
+                            />
                             </InputGroup>
                             <div style={{'width': '10px'}}> </div>
                             <InputGroup className="mb-3" style={{'width': '50%'}}>
@@ -175,7 +211,7 @@ function RangeFlights(){
                 data={searchResults}
                 columns={columns}
                 pagination={paginationFactory()}
-            />
+                rowEvents={changeStatus}/>
                 :null
                 }
 

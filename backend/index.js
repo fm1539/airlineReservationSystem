@@ -731,12 +731,18 @@ app.post('/api/staff/createFlight', function(req, res){
 });
 
 app.post('/api/staff/changeStatus', function(req, res){
-    let newStatus = req.body.newStatus
+    let newStatus = req.body.status
     let airline_name = req.body.airline_name
     let flight_number = req.body.flight_number
     let depart_date = req.body.depart_date
     let depart_time = req.body.depart_time
-    
+
+    console.log('newStatus', newStatus);
+    console.log('airline_name', airline_name);
+    console.log('flight_number', flight_number);
+    console.log('depart_date', depart_date);
+    console.log('depart_time', depart_time);
+
     connection.query(`
     UPDATE \`Flight\` SET \`status\` = ? WHERE \`airline_name\` = ? AND \`flight_number\` = ? AND \`depart_date\` = ? AND \`depart_time\` = ? 
     `,[newStatus,airline_name,flight_number,depart_date,depart_time] ,function(err, results, fields) {
@@ -758,10 +764,84 @@ app.post('/api/staff/addAirplane', function(req, res){
             , [airplaneID, airline_name, seats], function (err, results, fields){
                 if (err) res.json({'status': 'invalid'})
                 else res.json({'status': 'inserted'})  
+
             })
         }
     })
 });
+//get all airplanes owned by a specified airline
+app.get('/api/staff/getAllAirplanes/:airline_name', function(req, res){
+    let airline_name = req.params.airline_name
+    connection.query(`Select ID from Airplane where airline_name = ?`
+    , [airline_name], function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else res.json({'ownedAirplanes': results})
+    })
+})
+
+app.get('/api/staff/viewRatings', function(req, res){
+    const obj ={
+        'airline_name' : req.body.airline_name,
+        'flight_number' : req.body.flight_number,
+        'depart_date' : req.body.depart_date,
+        'depart_time' : req.body.depart_time
+    }
+
+    for (var key in obj){
+        if (obj[key] === undefined){
+            obj[key] = '%'
+        }
+    }
+/*
+SELECT airline_name,flight_number,depart_date,depart_time, AVG(rating) as avgRating
+FROM `Rate` WHERE 
+airline_name Like '%' AND
+flight_number Like '%' AND
+depart_date Like '%' AND
+depart_time Like '%'
+GROUP by airline_name,flight_number,depart_date,depart_time
+*/
+    connection.query(`SELECT customer_email, rating, comments FROM Rate WHERE 
+    airline_name Like ? AND
+    flight_number Like ? AND
+    depart_date Like ? AND
+    depart_time Like ? `
+    , [obj['airline_name'],obj['flight_number'], obj['depart_date'], obj['depart_time']], function (err, results, fields){
+        if (err) throw err
+        else {
+            ratingsObj = {'ratings':results}
+            connection.query(`
+            SELECT AVG(rating) as avgRating
+            FROM Rate WHERE 
+            airline_name Like ? AND
+            flight_number Like ? AND
+            depart_date Like ? AND
+            depart_time Like ?
+            GROUP by airline_name,flight_number,depart_date,depart_time
+            `
+            , [obj['airline_name'],obj['flight_number'], obj['depart_date'], obj['depart_time']], function (err, results, fields){
+                if (err) res.json({'status': 'invalid'})
+                else{
+                    ratingsObj['avgRating'] = results
+                    res.json(ratingsObj)
+                }
+            })
+        }
+    })
+})
+
+
+app.post('/api/staff/addAirport', function(req, res){
+    let airportName = req.body.airportName
+    let airportCity = req.body.airportCity
+    connection.query(`INSERT INTO \`Airport\` (\`name\`, \`city\`) VALUES (?, ?)`
+    ,[airportName, airportCity], function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else res.json({'status': 'inserted'})  
+    })
+})
+
+
 
 app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
     console.log(req.params.airLineID)               //this prints the users parameter

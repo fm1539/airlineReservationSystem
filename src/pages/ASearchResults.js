@@ -18,10 +18,7 @@ function ASearchResults(){
         password: ""
     })
 
-    const flightHandler = (arr) => {
-        setFlights(arr)
-        console.log(flights);
-    }
+    const flightHandler = (arr) => setFlights(arr)
 
     useEffect(async ()=>{
         var search = window.location.search
@@ -39,10 +36,7 @@ function ASearchResults(){
         })
     }
 
-    const loginButtonHandler = () => {
-        console.log(loginEvent)
-        aLogin(loginEvent, '/aSearchResults'+window.location.search)
-    }
+    const loginButtonHandler = () => aLogin(loginEvent, '/aSearchResults'+window.location.search)
 
     const [registerEvent, setRegisterEvent] = useState({
         email: "",
@@ -56,9 +50,7 @@ function ASearchResults(){
         })
     }
 
-    const registerButtonHandler = () => {
-        aRegister(registerEvent, '/aSearchResults')
-    }
+    const registerButtonHandler = () => aRegister(registerEvent, '/aSearchResults')
 
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -67,19 +59,7 @@ function ASearchResults(){
     const handleShow2 = () => setShow2(true);
 
     let loggedIn = false
-    if (aCheckLoggedIn()){
-        loggedIn = true
-    }
-{/* <td>{flight.ticketID}</td>
-<td>{flight.flight_number}</td>
-<td>{flight.airline_name}</td>
-<td>{flight.depart_date}</td>
-<td>{flight.depart_time}</td>
-<td>{flight.arrive_date}</td>
-<td>{flight.arrive_time}</td>
-<td>{flight.depart_airport_name}</td>
-<td>{flight.arrive_airport_name}</td>
-<td>{flight.base_price}</td> */}
+    if (aCheckLoggedIn()) loggedIn = true
 
     const columns = [
         { dataField: "ID", text: 'Ticket ID' },
@@ -88,7 +68,6 @@ function ASearchResults(){
 
     const rowEvents = {
         onClick: (e, row, rowIndex) => {
-          console.log(row);
           if (loggedIn) window.location = '/aPurchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price    
           else handleShow()
         }
