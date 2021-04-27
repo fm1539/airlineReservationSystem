@@ -3,7 +3,7 @@ import axios from 'axios'
 import Sidebar from '../shared/Sidebar'
 import NavBar from '../shared/NavBar'
 import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../global/Reducer'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col} from 'react-bootstrap'
+import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 import BootstrapTable from 'react-bootstrap-table-next'
 
@@ -18,15 +18,23 @@ function RangeFlights(){
         arrive_date: ""
     }) 
     const [statusPopup, setStatusPopup] = useState(false)
-    const [status, setStatus] = useState({})
+    const [status, setStatus] = useState({
+        'customers': []
+    })
 
-    const rowInfoHandler = (obj) => setStatus(obj)
-
+    const rowInfoHandler = (obj) => {
+        console.log(obj);
+        setStatus({
+        ...status,
+        ['customers']: obj.customers
+    })
+    }
     const showChangeStatusPopup = () => setStatusPopup(true)
     
     const hideChangeStatusPopup = () => setStatusPopup(false)
 
     const statusChangeHandler = (event) => {
+        console.log(event);
         setStatus({
             ...status,
             [event.target.name]: event.target.value
@@ -66,6 +74,7 @@ function RangeFlights(){
     const changeStatus = {
         onClick: (e, row, rowIndex) => {
           //save specific row info to a state
+          console.log(row);
           rowInfoHandler(row)
 
           //have modal pop up to add review and submit
@@ -144,15 +153,30 @@ function RangeFlights(){
                 <Modal.Title>Change Status</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <form>
-                        <label>New Status</label>
-                        <br/>
-                        <select id="changeStatus" name="status" onChange={statusChangeHandler}>
-                            <option></option>
-                            <option value="ontime">On Time</option>
-                            <option value="delayed">Delayed</option>
-                        </select>
-                    </form>
+                    <Tabs defaultActiveKey="customers" id="uncontrolled-tab-example">
+                        <Tab eventKey="customers" title="Customers">
+                            {/* {
+                                status.customers.map((customer)=>{
+                                    return (
+                                        <p>{customer}</p>
+                                    )
+                                })
+                            
+                            } */}
+                        </Tab>
+                        <Tab eventKey="status" title="Change Status">
+                            <form>
+                                <label>New Status</label>
+                                <br/>
+                                <select id="changeStatus" name="status" onChange={statusChangeHandler}>
+                                    <option></option>
+                                    <option value="ontime">On Time</option>
+                                    <option value="delayed">Delayed</option>
+                                </select>
+                            </form>
+
+                        </Tab>
+                    </Tabs>
                 </Modal.Body>
                 <Modal.Footer>
                 <Button variant="secondary" onClick={hideChangeStatusPopup}>

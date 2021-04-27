@@ -11,7 +11,7 @@ import ACheckoutForm from './pages/APurchase'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TrackSpender from './pages/TrackSpending'
-impoHomePage from './pages/AHomePage'
+import AHomePage from './pages/AHomePage'
 import SHomePage from './pages/SHomePage'
 import ViewTopCustomer from './pages/ViewTopCustomer'
 import About from './pages/About'

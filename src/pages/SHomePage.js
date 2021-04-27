@@ -13,7 +13,9 @@ function SHomePage(){
     const [airports, setAirports] = useState([])
     const [allFlights, setAllFlights] = useState([])
     const [statusPopup, setStatusPopup] = useState(false)
-    const [status, setStatus] = useState({})
+    const [status, setStatus] = useState({
+        customers: []
+    })
     const [flight, setFlight] = useState({
         departDate: "", departTime: "", arriveDate: "" , arriveTime: "",
         arriveAirport: "", departAirport: "", basePrice: "", status: ""
@@ -134,6 +136,10 @@ function SHomePage(){
             [event.target.name]: event.target.value
         })
     }
+
+    useEffect(()=>{
+        console.log('status', status);
+    }, [status])
 
     const registerButtonHandler = () => sRegister(registerEvent, '/staff')
     
@@ -284,14 +290,13 @@ function SHomePage(){
                 <Modal.Body>
                 <Tabs defaultActiveKey="customers" id="uncontrolled-tab-example">
                     <Tab eventKey="customers" title="Customers">
-                        {status!=={} ?
+                        {
                             status.customers.map((customer)=>{
                                 return (
                                     <p>{customer}</p>
                                 )
                             })
-                        :
-                        null
+                        
                         }
                     </Tab>
                     <Tab eventKey="status" title="Change Status">

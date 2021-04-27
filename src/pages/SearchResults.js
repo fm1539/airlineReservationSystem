@@ -24,7 +24,11 @@ function SearchResults(){
     useEffect(async ()=>{
         var search = window.location.search
         const response = await axios.get('http://localhost:8000/api/customer/searchForFlights'+search)
-        if (response.data.status !== 'invalidempty') flightHandler(response.data.flightsArr);
+        console.log(response);
+        if (response.data.status !== 'invalidempty'){
+            flightHandler(response.data.flightsArr);
+            console.log(response);
+        } 
     }, [])
 
     const loginChangeHandler = (event) => {

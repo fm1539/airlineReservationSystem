@@ -149,6 +149,7 @@ app.get('/api/customer/searchForFlights', function(req, res){
     const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     const yestDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+(today.getDate()-1);
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    console.log(req.query);
     const obj ={
         "sourceCity": req.query.sourceCity,
         "sourceAirport": req.query.sourceAirport,
@@ -163,7 +164,7 @@ app.get('/api/customer/searchForFlights', function(req, res){
             obj[key] = '%'
         }
     }
-
+    console.log(obj)
 
     // console.log(obj.sourceAirport)    
     // console.log(obj.destinationAirport)   
