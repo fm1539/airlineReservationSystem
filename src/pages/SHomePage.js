@@ -293,7 +293,7 @@ function SHomePage(){
                         {
                             status.customers.map((customer)=>{
                                 return (
-                                    <p>{customer}</p>
+                                    <p>{customer.customer_email}</p>
                                 )
                             })
                         

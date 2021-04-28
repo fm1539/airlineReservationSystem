@@ -30,11 +30,9 @@ function RangeFlights(){
     })
     }
     const showChangeStatusPopup = () => setStatusPopup(true)
-    
     const hideChangeStatusPopup = () => setStatusPopup(false)
 
     const statusChangeHandler = (event) => {
-        console.log(event);
         setStatus({
             ...status,
             [event.target.name]: event.target.value
@@ -42,7 +40,6 @@ function RangeFlights(){
     }
 
     const [searchResults, setSearchResults] = useState([])
-
     const searchResultsHandler = (arr) => setSearchResults(arr)
 
     const [show, setShow] = useState(false);
@@ -71,12 +68,23 @@ function RangeFlights(){
         axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => window.location = '/staff')   
     }
 
+    const [ratingObj, setRating] = useState({})
+    
+    const ratingsHandler = (obj) =>{
+        console.log(obj.ratings);
+        setRating(obj)        
+    }
+    
     const changeStatus = {
         onClick: (e, row, rowIndex) => {
           //save specific row info to a state
           console.log(row);
           rowInfoHandler(row)
-
+          const query = '?airline_name='+row.airline_name+'&flight_number='+row.flight_number+'&depart_date='+row.depart_date+'&depart_time='+row.depart_time
+          axios.get('http://localhost:8000/api/staff/viewRatings'+query).then(response => {
+            console.log(response.data);
+            ratingsHandler(response.data)
+        })
           //have modal pop up to add review and submit
           showChangeStatusPopup()
         }
@@ -155,14 +163,14 @@ function RangeFlights(){
                 <Modal.Body>
                     <Tabs defaultActiveKey="customers" id="uncontrolled-tab-example">
                         <Tab eventKey="customers" title="Customers">
-                            {/* {
+                            {
                                 status.customers.map((customer)=>{
                                     return (
-                                        <p>{customer}</p>
+                                        <p>{customer.customer_email}</p>
                                     )
                                 })
                             
-                            } */}
+                            }
                         </Tab>
                         <Tab eventKey="status" title="Change Status">
                             <form>
@@ -175,6 +183,23 @@ function RangeFlights(){
                                 </select>
                             </form>
 
+                        </Tab>
+                        <Tab eventKey="reviews" title="Reviews">
+                            
+                            <h2>{ratingObj.avgRating}</h2>
+                            {
+                                ratingObj.ratings !== undefined ?
+                                ratingObj.ratings.map((rating)=>{
+                                    return (
+                                    <div>
+                                        <h6>{rating.customer_email}</h6>
+                                        <p style={{textAlign: 'left'}}>{rating.comments}</p>
+                                        <p style={{textAlign: 'left'}}>{rating.rating}</p>
+                                    </div>
+                                    )
+                                })
+                                :null
+                            }
                         </Tab>
                     </Tabs>
                 </Modal.Body>

@@ -16,6 +16,7 @@ import SHomePage from './pages/SHomePage'
 import ViewTopCustomer from './pages/ViewTopCustomer'
 import About from './pages/About'
 import AirplaneConfirmation from './pages/AirplaneConfirmation'
+import SAgent from './pages/SAgent'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -109,6 +110,12 @@ function App() {
             {JSON.parse(localStorage.getItem('staffObj')) ? 
             <AirplaneConfirmation />:
             <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/sAgent' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ? 
+              <SAgent /> :
+              <Redirect to="/staff" />
             }
           </Route>
         </Switch>

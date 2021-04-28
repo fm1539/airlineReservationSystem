@@ -706,6 +706,7 @@ app.post('/api/staff/createFlight', function(req, res){
     let depart_airport_name = req.body.depart_airport_name
     let base_price = req.body.base_price
     let status = req.body.status
+    let airplaneID = req.body.airplaneID
     console.log('airline_name', airline_name);
     console.log('depart_date', depart_date);
     console.log('depart_time', depart_time);
@@ -724,6 +725,12 @@ app.post('/api/staff/createFlight', function(req, res){
             connection.query("INSERT INTO `Flight` (`airline_name`, `flight_number`, `depart_date`, `depart_time`, `arrive_date`, `arrive_time`, `arrive_airport_name`, `depart_airport_name`, `base_price`, `status`)"
             + ` Values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
             , [airline_name, flight_number, depart_date,depart_time,arrive_date,arrive_time,arrive_airport_name,depart_airport_name,base_price,status], function (err, results, fields){
+                if (err) throw err
+
+            })
+            connection.query("INSERT INTO `Uses` (`ID`,`airline_name`, `flight_number`, `depart_date`, `depart_time`)"
+            + ` Values(?, ?, ?, ?, ?)`
+            , [airplaneID,airline_name, flight_number, depart_date,depart_time], function (err, results, fields){
                 if (err) res.json({'status': 'invalid'})
                 else res.json({'status': 'inserted'})  
             })
@@ -771,9 +778,11 @@ app.post('/api/staff/addAirplane', function(req, res){
     })
 });
 //get all airplanes owned by a specified airline
-app.get('/api/staff/getAllAirplanes/:airline_name', function(req, res){
-    let airline_name = req.params.airline_name
-    connection.query(`Select ID from Airplane where airline_name = ?`
+app.get('/api/staff/getAllAirplanes', function(req, res){
+    let airline_name = req.query.airline_name
+    if (airline_name == undefined)
+        airline_name = '%'
+    connection.query(`Select ID from Airplane where airline_name Like ?`
     , [airline_name], function (err, results, fields){
         if (err) res.json({'status': 'invalid'})
         else res.json({'ownedAirplanes': results})
@@ -782,10 +791,10 @@ app.get('/api/staff/getAllAirplanes/:airline_name', function(req, res){
 
 app.get('/api/staff/viewRatings', function(req, res){
     const obj ={
-        'airline_name' : req.body.airline_name,
-        'flight_number' : req.body.flight_number,
-        'depart_date' : req.body.depart_date,
-        'depart_time' : req.body.depart_time
+        'airline_name' : req.query.airline_name,
+        'flight_number' : req.query.flight_number,
+        'depart_date' : req.query.depart_date,
+        'depart_time' : req.query.depart_time
     }
 
     for (var key in obj){
@@ -793,15 +802,6 @@ app.get('/api/staff/viewRatings', function(req, res){
             obj[key] = '%'
         }
     }
-/*
-SELECT airline_name,flight_number,depart_date,depart_time, AVG(rating) as avgRating
-FROM `Rate` WHERE 
-airline_name Like '%' AND
-flight_number Like '%' AND
-depart_date Like '%' AND
-depart_time Like '%'
-GROUP by airline_name,flight_number,depart_date,depart_time
-*/
     connection.query(`SELECT customer_email, rating, comments FROM Rate WHERE 
     airline_name Like ? AND
     flight_number Like ? AND
@@ -822,8 +822,11 @@ GROUP by airline_name,flight_number,depart_date,depart_time
             `
             , [obj['airline_name'],obj['flight_number'], obj['depart_date'], obj['depart_time']], function (err, results, fields){
                 if (err) res.json({'status': 'invalid'})
+                else if (!results.length){
+                    res.json('invalidempty')
+                }
                 else{
-                    ratingsObj['avgRating'] = results
+                    ratingsObj['avgRating'] = results[0].avgRating
                     res.json(ratingsObj)
                 }
             })
@@ -831,6 +834,56 @@ GROUP by airline_name,flight_number,depart_date,depart_time
     })
 })
 
+app.get('/api/staff/topAgents', function(req, res){
+    airline_name = req.body.airline_name
+    depart_date = req.body.depart_date
+    let today = new Date();
+    today.setFullYear(today.getFullYear() - 1)
+    const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    connection.query(`
+    SELECT agent_email, count(agent_email) as ticketsSold
+    FROM Agent_Purchases
+    where depart_date > ? and airline_name = ? 
+    GROUP by agent_email
+    order by count(*) desc
+    limit 5
+    `
+    , [depart_date, airline_name], function (err, results, fields){
+        if (err) throw err
+        else{
+            topAgentObj = {"topAgentByTicketsSold": results}
+            connection.query(`
+            SELECT agent_email, sum(base_price) as commissioned
+            FROM Agent_Purchases NATURAL join Flight
+            where depart_date > ? and airline_name = ? 
+            GROUP by agent_email
+            order by sum(base_price) desc
+            limit 5
+            `
+            , [date1YearAgo, airline_name], function (err, results, fields){
+                if (err) res.json({'status': 'invalid'})
+                else{
+                    topAgentObj["topAgentByCommission"] = results
+                    res.json(topAgentObj)
+                }
+            })
+        }
+    })
+})
+
+//frequent customers:
+/*
+SELECT customer_email, count(*) as purchases
+FROM allPurchases
+GROUP by customer_email
+order by count(*) desc
+limit 5
+*/
+
+//top agent
+/*
+
+*/
 
 app.post('/api/staff/addAirport', function(req, res){
     let airportName = req.body.airportName
