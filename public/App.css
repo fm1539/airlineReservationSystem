@@ -139,6 +139,12 @@ body {
   width: 90%;
 }
 
+.flights-div{
+  width: 100%;
+  display: flex;
+  
+}
+
 /* KEYFRAMES */
 
 @-webkit-keyframes animateBubble {

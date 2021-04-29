@@ -17,6 +17,7 @@ import ViewTopCustomer from './pages/ViewTopCustomer'
 import About from './pages/About'
 import AirplaneConfirmation from './pages/AirplaneConfirmation'
 import SAgent from './pages/SAgent'
+import Frequent from './pages/Frequent/Frequent'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -115,6 +116,12 @@ function App() {
           <Route path='/sAgent' exact>
             {JSON.parse(localStorage.getItem('staffObj')) ? 
               <SAgent /> :
+              <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/frequent' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ? 
+              <Frequent /> :
               <Redirect to="/staff" />
             }
           </Route>

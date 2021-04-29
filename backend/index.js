@@ -21,16 +21,16 @@ app.use(bodyParser.json())          //allows to send json //allows.json method
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-var mysql = require('mysql');
+var connection = require('mysql2-promise')();
 
-var connection = mysql.createConnection({
+connection.configure({
   host     : 'bhvnh1znohtkeluykr2r-mysql.services.clever-cloud.com',
   user     : 'ubsbqvfcyngpgwfb',
   password : 'JGwD07olU9zwGKAWnliE',
   database : 'bhvnh1znohtkeluykr2r'
 });
 
-connection.connect();
+//connection.connect();
 
 // connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
 //   if (error) throw error;
@@ -834,12 +834,20 @@ app.get('/api/staff/viewRatings', function(req, res){
     })
 })
 
-app.get('/api/staff/topAgents', function(req, res){
+app.post('/api/staff/topAgents', function(req, res){
+    let timeFlag = req.body.timeFlag //"month" or "year" for the first query
     airline_name = req.body.airline_name
-    depart_date = req.body.depart_date
     let today = new Date();
-    today.setFullYear(today.getFullYear() - 1)
+    today.setMonth(today.getMonth() - 1)
+    const date1MonthAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 11)
     const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    let depart_date;
+    if (timeFlag == "month") {
+        depart_date = date1MonthAgo
+    }
+    else{ 
+        depart_date = date1YearAgo }
     connection.query(`
     SELECT agent_email, count(agent_email) as ticketsSold
     FROM Agent_Purchases
@@ -853,7 +861,7 @@ app.get('/api/staff/topAgents', function(req, res){
         else{
             topAgentObj = {"topAgentByTicketsSold": results}
             connection.query(`
-            SELECT agent_email, sum(base_price) as commissioned
+            SELECT agent_email, sum(base_price)*.1 as commissioned
             FROM Agent_Purchases NATURAL join Flight
             where depart_date > ? and airline_name = ? 
             GROUP by agent_email
@@ -871,19 +879,107 @@ app.get('/api/staff/topAgents', function(req, res){
     })
 })
 
-//frequent customers:
-/*
-SELECT customer_email, count(*) as purchases
-FROM allPurchases
-GROUP by customer_email
-order by count(*) desc
-limit 5
-*/
+app.get('/api/staff/frequentCustomer', function(req, res){
+    //let customer_email = req.body.customer_email
+    let airline_name = req.body.airline_name
+    let today = new Date();
+    console.log("start")
+    today.setFullYear(today.getFullYear() - 1)
+    const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    connection.query(`SELECT distinct flight_number
+    FROM allPurchases
+    WHERE airline_name = ?
+    `, [airline_name],  async function (err, results1, fields){ // results = [flight #s]
+        if (err) throw err
+        else{
+            console.log("here");
+            if (results1.length){
+                resultsObj = {}
+                console.log('results1', results1);
+                let key;
+                for (let i = 0; i < results1.length; i++){
+                    key = results1[i].flight_number
+                    console.log('2nd', results1[i].flight_number);
+                    try{
+                    let [row, fields] = await connection.execute(`Select distinct customer_email from allPurchases where flight_number = ?
+                    `, [key])
+                    resultsObj[key] = results2
+                    console.log('row', row);
+                    console.log('fields', fields);
+                    }
+                    catch(err){
+                        console.log(err);
+                    }
+                }
+                console.log('resultsObj-outsideloop', resultsObj);
+                res.json(resultsObj)
+            }
+        }
+    })
+})
+    /*
+    connection.query(`
+    SELECT customer_email, count(*) as purchases
+    FROM allPurchases
+    WHERE airline_name = ? and depart_date > ?
+    GROUP by customer_email
+    order by count(*) desc
+    limit 1
+    `
+    , [airline_name, date1YearAgo], function (err, results, fields){
+        if (err) throw err
+        else {
+            frequentCustomerObj = {"frequentCustomer": results[0]}
+            //removed this from where statment:  and customer_email = ?
+            connection.query(`
+            SELECT *
+            FROM allPurchases
+            WHERE airline_name = ?
+            `
+            ,[airline_name], function (err, results, fields){
+                if (err) res.json({'status': 'invalid'})
+                else{
+                    frequentCustomerObj["airlinesFlights"] = results
+                    res.json(frequentCustomerObj)
+                }
+            })
+        }
+    })
+    */
+// })
 
-//top agent
-/*
-
-*/
+app.get('/api/staff/viewReports', function(req, res){
+    let airline_name = req.body.airline_name
+    let startDate = req.body.startDate
+    let endDate = req.body.endDate
+    let timeFlag = req.body.timeFlag //can be last "month" or last "year"
+    let today = new Date();
+    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 1)
+    const date1MonthAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 11)
+    const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    if (timeFlag == "month"){
+        startDate = date1MonthAgo
+        endDate = dateToday
+    }
+    if (timeFlag == "year"){
+        startDate = date1YearAgo
+        endDate = dateToday
+    }
+    console.log("startDate", startDate)
+    console.log("endDate", endDate)
+    connection.query(`
+    SELECT MONTH(depart_date) as month,count(*) as ticketsSold
+    FROM allPurchases
+    where depart_date >  ? and depart_date < ? and airline_name = ? 
+    group by MONTH(depart_date)
+    `
+    ,[startDate,endDate, airline_name], function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else res.json(results)  
+    })
+})
 
 app.post('/api/staff/addAirport', function(req, res){
     let airportName = req.body.airportName
