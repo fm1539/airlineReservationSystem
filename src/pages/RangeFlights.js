@@ -185,7 +185,6 @@ function RangeFlights(){
 
                         </Tab>
                         <Tab eventKey="reviews" title="Reviews">
-                            
                             <h2>{ratingObj.avgRating}</h2>
                             {
                                 ratingObj.ratings !== undefined ?
@@ -260,7 +259,8 @@ function RangeFlights(){
                 data={searchResults}
                 columns={columns}
                 pagination={paginationFactory()}
-                rowEvents={changeStatus}/>
+                // rowEvents={changeStatus}
+                />
                 :null
                 }
 

@@ -42,7 +42,6 @@ function SAgent(){
             airline_name: JSON.parse(localStorage.getItem('staffObj')).airline_name
         }
         axios.post("http://localhost:8000/api/staff/topAgents", obj).then(response => {
-            console.log(response);
             setTopTicketsObjHandler(response.data.topAgentByTicketsSold);
             setTopCommissionsObjHandler(response.data.topAgentByCommission);
         })

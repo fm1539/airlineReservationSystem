@@ -1,10 +1,12 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
 import {sCheckLoggedIn, sLogout, sLogin, sRegister} from '../../global/Reducer'
 import NavBar from '../../shared/NavBar'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 import BootstrapTable from 'react-bootstrap-table-next'
 import Sidebar from '../../shared/Sidebar'
+import axios from 'axios'
+import Flight from './Flight'
 
 function Frequent(){
 
@@ -20,6 +22,15 @@ function Frequent(){
     
     let loggedIn = false
     if (sCheckLoggedIn()) loggedIn = true
+
+    const []
+    const [customers, setCustomers] = useState([])
+
+    useEffect(() => {
+        axios.get('http://localhost:8000/api/staff/').then(response => {
+
+        })
+    }, [])
 
     return (
         <React.Fragment>
@@ -43,7 +54,19 @@ function Frequent(){
         <div>
             <Sidebar />
             <div style={{marginLeft: '270px'}}>
-                
+                <div className="flights-div">
+                    <h1>Flights</h1>
+                    <br /><br />
+                    {props.searchResults.length == 0 ? 
+                    flights.map((student) => {
+                        return <Flight customers={customers}/>
+                    })
+                    : 
+                    flights.searchResults.map((student) => {
+                        return <Flight customers={customers}/>
+                    })
+                    }
+                </div>
             </div>
         </div>
     </React.Fragment>

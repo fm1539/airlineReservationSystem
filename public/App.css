@@ -140,10 +140,48 @@ body {
 }
 
 .flights-div{
-  width: 100%;
-  display: flex;
+  width: 60%;
+    margin-top: 18vh;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    text-align: left;
+    border: solid black;
+    border-width: 0;
+    border-radius: 3px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    height: 60vh;
+    overflow-y: scroll;
   
 }
+
+.flight_div{
+    width: 100%;
+    display: flex;
+}
+.flight-info{
+    
+  height: 30%;
+  margin-left: 5%;
+}
+
+.plus{
+  border: none;
+  background-color: white;
+  cursor: pointer;
+  display: inline-block;
+  height: 50px;
+  order: 2;
+  margin-left: auto;
+  margin-top: 20px;
+  margin-right: 10px;
+  float: right;
+}
+
+.plus:focus{
+  outline: none;
+}
+
 
 /* KEYFRAMES */
 
