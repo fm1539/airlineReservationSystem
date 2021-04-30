@@ -10,7 +10,7 @@ function Sidebar(){
 
     const [flight, setFlight] = useState({
         departDate: "", departTime: "", arriveDate: "" , arriveTime: "",
-        arriveAirport: "", departAirport: "", basePrice: "", status: ""
+        arriveAirport: "", departAirport: "", basePrice: "", status: "", airplane: ""
     })
 
     const [airplane, setAirplane] = useState({
@@ -63,7 +63,8 @@ function Sidebar(){
             arrive_airport_name: flight.arriveAirport,
             depart_airport_name: flight.departAirport,
             base_price: flight.basePrice,
-            status: flight.status
+            status: flight.status,
+            airplane: flight.airplane
         }
         axios.post("http://localhost:8000/api/staff/createFlight", obj).then(response => window.location = '/staff')
     }
@@ -88,16 +89,25 @@ function Sidebar(){
     const [showCreate, setShowCreate] = useState(false)
     const handleCloseCreate = () => setShowCreate(false)
     const handleShowCreate = () => setShowCreate(true)
+    const [airplanes, setAirplanes] = useState([])
+
+    const airplanesHandler = (arr) => setAirplanes(arr)
 
     const airportHandler = (arr) => setAirports(arr)
     
     useEffect(()=> {
         axios.get('http://localhost:8000/api/staff/getAllAirports').then( response => {
             let arr = []
-            response.data.results.forEach(airport => {
-                arr.push([airport.name, true, true])
-            });
-            airportHandler(arr)
+            if (response.data.status !== "invalidempty"){
+                response.data.results.forEach(airport => {
+                    arr.push([airport.name, true, true])
+                });
+                airportHandler(arr)
+            }
+        })
+        axios.get('http://localhost:8000/api/staff/getAllAirplanes/'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+            console.log(response.data);    
+            airplanesHandler(response.data.ownedAirplanes)
         })
     }, [])
 
@@ -214,7 +224,16 @@ function Sidebar(){
                             <label> Status </label>
                             <br/>
                             <input type="text" name="status" placeholder="Status" onChange={flightChangeHandler} autocomplete="chrome-off" required/>
-                            <br/>
+                            <br/><br/>
+                            <label>Airplane</label>
+                            <select id="airplanes" name="airplane" onChange={flightChangeHandler}>
+                                <option></option>
+                                {airplanes.map((airplane)=>{
+                                    return (
+                                        <option value={airplane.ID}>{airplane.ID}</option>
+                                    )
+                                })}
+                            </select>
                             <br/>
                         </form>
                     </Modal.Body>

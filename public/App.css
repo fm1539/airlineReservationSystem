@@ -141,7 +141,7 @@ body {
 
 .flights-div{
   width: 60%;
-    margin-top: 18vh;
+    /* margin-top: 18vh; */
     margin-left: auto;
     margin-right: auto;
     background-color: white;
@@ -153,6 +153,25 @@ body {
     height: 60vh;
     overflow-y: scroll;
   
+}
+
+.plus{
+    border: none;
+    background-color: white;
+    cursor: pointer;
+    display: inline-block;
+    height: 50px;
+    order: 2;
+    /* margin-left: auto;
+    margin-top: 20px;
+    margin-right: 10px; */
+    /* float: right; */
+    position: relative;
+    bottom: 10vh;
+}
+
+.plus:focus{
+    outline: none;
 }
 
 .flight_div{

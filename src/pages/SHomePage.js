@@ -92,13 +92,15 @@ function SHomePage(){
             axios.post('http://localhost:8000/api/staff/viewFlights', obj).then(response =>{
                 console.log('viewmyflights', response);
                 let arr = []
-                response.data.results.forEach(obj => {
-                    arr.push({
-                        ...obj,
-                        ['depart_date']: obj['depart_date'].slice(0, obj['depart_date'].indexOf('T')),
-                        ['arrive_date']: obj['arrive_date'].slice(0, obj['arrive_date'].indexOf('T'))
-                    })
-                });
+                if (response.data.status !== "invalidempty"){
+                    response.data.results.forEach(obj => {
+                        arr.push({
+                            ...obj,
+                            ['depart_date']: obj['depart_date'].slice(0, obj['depart_date'].indexOf('T')),
+                            ['arrive_date']: obj['arrive_date'].slice(0, obj['arrive_date'].indexOf('T'))
+                        })
+                    });
+            }
                 allFlightsHandler(arr)
             })
         

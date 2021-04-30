@@ -23,12 +23,29 @@ function Frequent(){
     let loggedIn = false
     if (sCheckLoggedIn()) loggedIn = true
 
-    const []
+    const [flightNumbers, setFlightNumbers] = useState([])
     const [customers, setCustomers] = useState([])
 
-    useEffect(() => {
-        axios.get('http://localhost:8000/api/staff/').then(response => {
+    const flightNumbersHandler = (arr) => {
+        setFlightNumbers(arr)
+    }
+    const customersHandler = (arr) => {
+        setCustomers(arr)
+    }
 
+    useEffect(() => {
+        axios.get('http://localhost:8000/api/staff/frequentCustomer/'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+            const obj = response.data
+            console.log('obj', obj);
+            let arrF = []
+            let arrC = []
+            for (let key in obj){
+                arrF.push(key)
+                arrC.push(obj[key])
+                console.log('obj[key]', obj[key]);
+            }
+            flightNumbersHandler(arrF)
+            customersHandler(arrC)
         })
     }, [])
 
@@ -53,18 +70,16 @@ function Frequent(){
 
         <div>
             <Sidebar />
-            <div style={{marginLeft: '270px'}}>
+            <div style={{marginLeft: '270px', paddingTop: '80px'}}>
                 <div className="flights-div">
                     <h1>Flights</h1>
                     <br /><br />
-                    {props.searchResults.length == 0 ? 
-                    flights.map((student) => {
-                        return <Flight customers={customers}/>
+                    {flightNumbers.length? 
+                    flightNumbers.map((flightNumber, index) => {
+                        return <Flight flight_number={flightNumber} customers={customers[index]}/>
                     })
                     : 
-                    flights.searchResults.map((student) => {
-                        return <Flight customers={customers}/>
-                    })
+                    null
                     }
                 </div>
             </div>

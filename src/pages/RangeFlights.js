@@ -259,7 +259,7 @@ function RangeFlights(){
                 data={searchResults}
                 columns={columns}
                 pagination={paginationFactory()}
-                // rowEvents={changeStatus}
+                rowEvents={changeStatus}
                 />
                 :null
                 }

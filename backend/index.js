@@ -20,17 +20,24 @@ app.use((req, res, next) => {
 app.use(bodyParser.json())          //allows to send json //allows.json method
 app.use(bodyParser.urlencoded({ extended: true }));
 
+var mysql = require('mysql')
 
-var connection = require('mysql2-promise')();
+var connection = mysql.createConnection({
+    host     : 'bhvnh1znohtkeluykr2r-mysql.services.clever-cloud.com',
+    user     : 'ubsbqvfcyngpgwfb',
+    password : 'JGwD07olU9zwGKAWnliE',
+    database : 'bhvnh1znohtkeluykr2r'
+  });
+  connection.connect();
 
-connection.configure({
+var connection2 = require('mysql2-promise')();
+
+connection2.configure({
   host     : 'bhvnh1znohtkeluykr2r-mysql.services.clever-cloud.com',
   user     : 'ubsbqvfcyngpgwfb',
   password : 'JGwD07olU9zwGKAWnliE',
   database : 'bhvnh1znohtkeluykr2r'
 });
-
-//connection.connect();
 
 // connection.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
 //   if (error) throw error;
@@ -706,7 +713,7 @@ app.post('/api/staff/createFlight', function(req, res){
     let depart_airport_name = req.body.depart_airport_name
     let base_price = req.body.base_price
     let status = req.body.status
-    let airplaneID = req.body.airplaneID
+    let airplaneID = req.body.airplane
     console.log('airline_name', airline_name);
     console.log('depart_date', depart_date);
     console.log('depart_time', depart_time);
@@ -716,7 +723,7 @@ app.post('/api/staff/createFlight', function(req, res){
     console.log('depart_airport_name', depart_airport_name);
     console.log('base_price', base_price);
     console.log('status', status);
-
+    console.log('airplaneID', airplaneID);
 
     connection.query("Select * from `Flight` Where 1", function (err, results, fields){
         if (err) throw err
@@ -778,8 +785,8 @@ app.post('/api/staff/addAirplane', function(req, res){
     })
 });
 //get all airplanes owned by a specified airline
-app.get('/api/staff/getAllAirplanes', function(req, res){
-    let airline_name = req.query.airline_name
+app.get('/api/staff/getAllAirplanes/:airline_name', function(req, res){
+    let airline_name = req.params.airline_name
     if (airline_name == undefined)
         airline_name = '%'
     connection.query(`Select ID from Airplane where airline_name Like ?`
@@ -796,6 +803,8 @@ app.get('/api/staff/viewRatings', function(req, res){
         'depart_date' : req.query.depart_date,
         'depart_time' : req.query.depart_time
     }
+
+    console.log("RATING OBJ", obj)
 
     for (var key in obj){
         if (obj[key] === undefined){
@@ -879,74 +888,78 @@ app.post('/api/staff/topAgents', function(req, res){
     })
 })
 
-app.get('/api/staff/frequentCustomer', function(req, res){
+// app.get('/api/staff/frequentCustomer', function(req, res){
+//     //let customer_email = req.body.customer_email
+//     let airline_name = req.body.airline_name
+//     let today = new Date();
+//     console.log("start")
+//     today.setFullYear(today.getFullYear() - 1)
+//     const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+//     connection.query(`SELECT distinct flight_number
+//     FROM allPurchases
+//     WHERE airline_name = ?
+//     `, [airline_name],  async function (err, results1, fields){ // results = [flight #s]
+//         if (err) throw err
+//         else{
+//             console.log("here");
+//             if (results1.length){
+//                 resultsObj = {}
+//                 console.log('results1', results1);
+//                 let key;
+//                 for (let i = 0; i < results1.length; i++){
+//                     key = results1[i].flight_number
+//                     console.log('2nd', results1[i].flight_number);
+//                     try{
+//                     let [row, fields] = await connection.execute(`Select distinct customer_email from allPurchases where flight_number = ?
+//                     `, [key])
+//                     resultsObj[key] = results2
+//                     console.log('row', row);
+//                     console.log('fields', fields);
+//                     }
+//                     catch(err){
+//                         console.log(err);
+//                     }
+//                 }
+//                 console.log('resultsObj-outsideloop', resultsObj);
+//                 res.json(resultsObj)
+//             }
+//         }
+//     })
+// })
+app.get('/api/staff/frequentCustomer/:airline_name', async function(req, res){
     //let customer_email = req.body.customer_email
-    let airline_name = req.body.airline_name
+    let airline_name = req.params.airline_name
     let today = new Date();
     console.log("start")
     today.setFullYear(today.getFullYear() - 1)
     const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    connection.query(`SELECT distinct flight_number
-    FROM allPurchases
-    WHERE airline_name = ?
-    `, [airline_name],  async function (err, results1, fields){ // results = [flight #s]
-        if (err) throw err
-        else{
-            console.log("here");
-            if (results1.length){
-                resultsObj = {}
-                console.log('results1', results1);
-                let key;
-                for (let i = 0; i < results1.length; i++){
-                    key = results1[i].flight_number
-                    console.log('2nd', results1[i].flight_number);
-                    try{
-                    let [row, fields] = await connection.execute(`Select distinct customer_email from allPurchases where flight_number = ?
-                    `, [key])
-                    resultsObj[key] = results2
-                    console.log('row', row);
-                    console.log('fields', fields);
-                    }
-                    catch(err){
-                        console.log(err);
-                    }
-                }
-                console.log('resultsObj-outsideloop', resultsObj);
-                res.json(resultsObj)
-            }
+    let flights = await connection2.query(`SELECT distinct flight_number FROM allPurchases WHERE airline_name = ?`, [airline_name])
+    let resultsObj = {}
+    let flightNumbers = []
+    
+    flights[0].forEach(flight => {
+        flightNumbers.push(flight.flight_number)
+    });
+    // console.log(flightNumbers);
+    // res.json(flightNumbers)
+    if (flights.length){
+        for (let i = 0; i < flightNumbers.length; i++){
+            const key = flightNumbers[i]
+            console.log('key', key);
+            
+            let customers = await connection2.query(`Select distinct customer_email from allPurchases where flight_number = ?`, [key])
+            console.log('customers', customers);
+            resultsObj[key] = customers
         }
-    })
+        
+        let finalObj = {}
+        for (key in resultsObj){
+            finalObj[key] = resultsObj[key][0]
+        }
+
+        res.json(finalObj)
+    }
 })
-    /*
-    connection.query(`
-    SELECT customer_email, count(*) as purchases
-    FROM allPurchases
-    WHERE airline_name = ? and depart_date > ?
-    GROUP by customer_email
-    order by count(*) desc
-    limit 1
-    `
-    , [airline_name, date1YearAgo], function (err, results, fields){
-        if (err) throw err
-        else {
-            frequentCustomerObj = {"frequentCustomer": results[0]}
-            //removed this from where statment:  and customer_email = ?
-            connection.query(`
-            SELECT *
-            FROM allPurchases
-            WHERE airline_name = ?
-            `
-            ,[airline_name], function (err, results, fields){
-                if (err) res.json({'status': 'invalid'})
-                else{
-                    frequentCustomerObj["airlinesFlights"] = results
-                    res.json(frequentCustomerObj)
-                }
-            })
-        }
-    })
-    */
-// })
 
 app.get('/api/staff/viewReports', function(req, res){
     let airline_name = req.body.airline_name
@@ -981,6 +994,88 @@ app.get('/api/staff/viewReports', function(req, res){
     })
 })
 
+app.get('/api/staff/revenue', function(req, res){
+    let cusOrAgent = req.body.cusOrAgent
+    let airline_name = req.body.airline_name
+    let startDate = req.body.startDate
+    let endDate = req.body.endDate
+    let timeFlag = req.body.timeFlag //can be last "month" or last "year"
+    let today = new Date();
+    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 1)
+    const date1MonthAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 11)
+    const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    if (timeFlag == "month"){
+        startDate = date1MonthAgo
+        endDate = dateToday
+    }
+    if (timeFlag == "year"){
+        startDate = date1YearAgo
+        endDate = dateToday
+    }
+    if (cusOrAgent == "agent"){
+        connection.query(`
+        SELECT sum(base_price) as revenue 
+        from Agent_Purchases NATURAL join Flight 
+        where  depart_date > ? and depart_date < ? and airline_name = ?
+        `
+        ,[ startDate,endDate, airline_name], function (err, results, fields){
+            if (err) res.json({'status': 'invalid'})
+            else res.json(results)  
+        })
+    }
+    else{
+        connection.query(`
+        SELECT sum(base_price) as revenue 
+        from Customer_Purchases NATURAL join Flight 
+        where  depart_date > ? and depart_date < ? and airline_name = ?
+        `
+        ,[ startDate,endDate, airline_name], function (err, results, fields){
+            if (err) res.json({'status': 'invalid'})
+            else res.json(results)  
+        })
+    }
+})
+
+app.post('/api/staff/topDestinations', function(req, res){
+    let endDate;
+    let startDate;
+    let timeFlag = req.body.timeFlag
+    let airline_name = req.body.airline_name
+    let today = new Date();
+    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 3)
+    const date3MonthsAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    today.setMonth(today.getMonth() - 9)
+    const date1YearAgo = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    if (timeFlag == "month"){
+        startDate = date3MonthsAgo
+        endDate = dateToday
+    }
+    if (timeFlag == "year"){
+        startDate = date1YearAgo
+        endDate = dateToday
+    }
+    console.log(timeFlag)
+    console.log(startDate)
+    console.log(endDate)
+    connection.query(`
+    SELECT arrive_city, arrive_airport_name, count(*) as totalFlights
+    FROM allPurchases NATURAL JOIN allFlights
+    WHERE depart > ? and depart_date < ? and airline_name = ?
+    GROUP by arrive_city
+    order by count(*) desc
+    limit 3
+    `
+    ,[startDate, endDate, airline_name], function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        resultsObj = {results}
+        console.log(resultsObj)
+        //else res.json({results})  
+    })
+})
+
 app.post('/api/staff/addAirport', function(req, res){
     let airportName = req.body.airportName
     let airportCity = req.body.airportCity
@@ -993,13 +1088,13 @@ app.post('/api/staff/addAirport', function(req, res){
 
 
 
-app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
-    console.log(req.params.airLineID)               //this prints the users parameter
-    const airLineName = req.params.airLineID
-    const obj = { airLineName: database[airLineName] }
-    res.json(obj)                  
-    //res.send(req.params.airLineID)   //prints the user's parameter to their browser //res is "resposne you want to send back"
-})
+// app.get('/api/:airLineID', function(req, res){      // the colon makes it so its flexible
+//     console.log(req.params.airLineID)               //this prints the users parameter
+//     const airLineName = req.params.airLineID
+//     const obj = { airLineName: datab ase[airLineName] }
+//     res.json(obj)                  
+//     //res.send(req.params.airLineID)   //prints the user's parameter to their browser //res is "resposne you want to send back"
+// })
 
 app.get('/api/staff/getAllAirports', function(req, res){
     connection.query(`select * from Airport`, function(err, results, fields) {
