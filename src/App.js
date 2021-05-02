@@ -18,6 +18,10 @@ import About from './pages/About'
 import AirplaneConfirmation from './pages/AirplaneConfirmation'
 import SAgent from './pages/SAgent'
 import Frequent from './pages/Frequent/Frequent'
+import LastYear1 from './pages/Reports/LastYear1'
+import LastMonth from './pages/Reports/LastMonth'
+import RangedReports from './pages/Reports/RangedReports'
+import Comparison from './pages/Comparison'
 import {loadStripe} from '@stripe/stripe-js';
 import {
   CardElement,
@@ -27,6 +31,7 @@ import {
 } from '@stripe/react-stripe-js';
 import Commision from './pages/Commision'
 import RangeFlights from './pages/RangeFlights';
+import TopDestinations from './pages/TopDestinations'
 
 <Route path="/" exact>
           {JSON.parse(localStorage.getItem('userObj')) ?
@@ -122,6 +127,36 @@ function App() {
           <Route path='/frequent' exact>
             {JSON.parse(localStorage.getItem('staffObj')) ? 
               <Frequent /> :
+              <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/reportsLastYear' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ? 
+              <LastYear1 /> :
+              <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/reportsLastMonth' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ? 
+              <LastMonth /> :
+              <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/reportsRange' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ? 
+              <RangedReports /> :
+              <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/comparison' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ?
+              <Comparison /> :
+              <Redirect to="/staff" />
+            }
+          </Route>
+          <Route path='/topDestinations' exact>
+            {JSON.parse(localStorage.getItem('staffObj')) ?
+              <TopDestinations /> :
               <Redirect to="/staff" />
             }
           </Route>

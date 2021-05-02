@@ -319,9 +319,37 @@ function Sidebar(){
                         <NavLink to="/frequent" activeStyle={{ color: 'red' }}>
                             View Frequent Customers
                         </NavLink>
+                    </MenuItem>
+
+                    <SubMenu title="Reports" >
+                    <MenuItem>
+                        <NavLink to="/reportsLastYear"  activeStyle={{ color: 'red'}}>
+                            Last Year
+                        </NavLink>
+                    </MenuItem>
+                    <MenuItem>
+                        <NavLink to="/reportsLastMonth"  activeStyle={{ color: 'red'}}>
+                            Last Month
+                        </NavLink>
+                    </MenuItem>
+                    <MenuItem>
+                        <NavLink to="/reportsRange"  activeStyle={{ color: 'red'}}>
+                            Range
+                        </NavLink>
+                    </MenuItem>
+                    </SubMenu>
+
+                    <MenuItem>
+                        <NavLink to="/topDestinations" activeStyle={{ color: 'red' }}>
+                            View Top Destinations
+                        </NavLink>
                     </MenuItem>        
                     
-                    
+                    <MenuItem>
+                        <NavLink to="/comparison" activeStyle={{ color: 'red' }}>
+                            Compare Revenue
+                        </NavLink>
+                    </MenuItem>
 
             </Menu>
             </ProSidebar>

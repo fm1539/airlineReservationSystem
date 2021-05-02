@@ -159,7 +159,10 @@ function SHomePage(){
     }
 
     const changeButtonHandler = () => {
-        axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => window.location = '/staff')   
+        console.log('status', status);
+        axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => {
+            // window.location = '/staff'
+        })   
     }
 
     let custInfo = <p>Loading...</p>

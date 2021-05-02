@@ -19,15 +19,17 @@ function RangeFlights(){
     }) 
     const [statusPopup, setStatusPopup] = useState(false)
     const [status, setStatus] = useState({
-        'customers': []
+        customers: []
     })
 
     const rowInfoHandler = (obj) => {
         console.log(obj);
-        setStatus({
-        ...status,
-        ['customers']: obj.customers
-    })
+        setStatus(obj)
+    //     setStatus({
+    //     ...status,
+    //     ['customers']: obj.customers
+
+    // })
     }
     const showChangeStatusPopup = () => setStatusPopup(true)
     const hideChangeStatusPopup = () => setStatusPopup(false)
@@ -65,7 +67,11 @@ function RangeFlights(){
     const airportHandler = (arr) => setAirports(arr)
     
     const changeButtonHandler = () => {
-        axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => window.location = '/staff')   
+        console.log('status', status);
+        axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => {
+            console.log(response);
+            // window.location = '/staff'
+    })   
     }
 
     const [ratingObj, setRating] = useState({})

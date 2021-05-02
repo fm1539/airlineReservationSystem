@@ -38,6 +38,7 @@ var ACheckoutForm = () => {
         else if (response.data.status === "no email"){
           alert("Email does not exist.")
         }
+      window.location = '/aViewFlights'
     })
     // const { status } = response.data;
     // console.log("Response:", response.data);

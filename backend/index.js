@@ -1,7 +1,7 @@
 const express = require('express')  //import
 const bodyParser = require('body-parser')   //import
 require('dotenv').config()
-const stripeSecretKey = process.env.SECRETKEY 
+const stripeSecretKey = "sk_test_51IPVGeE1OhnzAuXA6O5DHCEnFoFn83P8Bm9IqUDf7uHctArxPDKPDBPU0UggytN4jWrxgr70KcXr5hzbUpMURyv9006YzplFOn" 
 const stripe = require ('stripe')(stripeSecretKey)
 
 const app = express()               // creating an instance of express
@@ -60,11 +60,14 @@ app.post('/api/customer/register', function(req, res){
         } else{
             dynamic += "'" + element + "',"
         }
-});
-
+    });
+    console.log(arr)
     const begin = "INSERT INTO `Customer` (`email`,`name`,`password`,`building_number`,`street`,`city`,`state`,`phone_number`,`passport_number`,`passport_expiration`,`passport_country`,`date_of_birth`)"
     connection.query(begin + " VALUES (" + dynamic + ")", function (err, results, fields){
-        if (err) res.json({'status': 'invalid'})
+        if (err) {
+            console.log(err);
+            res.json({'status': 'invalid'})
+        }
         else res.json({'status': 'registered'})  
     })
 })
@@ -442,7 +445,7 @@ app.get('/api/agent/searchForFlights', function(req, res){
     })
 })
 
-app.post('/api/agent/purchaseTickets', function(req, res){
+app.post('/api/agent/purchaseTickets', async (req, res) => {
     customer_email = req.body.token.email
     agent_email = req.body.obj.agent_email
     airline_name = req.body.obj.airline_name
@@ -458,6 +461,7 @@ app.post('/api/agent/purchaseTickets', function(req, res){
     console.log('depart_date', depart_date);
     console.log('depart_time', depart_time);
     console.log('base_price', base_price);
+    console.log(req.body.token);
 
     connection.query("Select email from `Customer` Where email=?", [customer_email], (err, results, fields) => {
         if (err) throw err;
@@ -480,32 +484,68 @@ app.post('/api/agent/purchaseTickets', function(req, res){
         }    
     })
 
-    let ticketID = 0
-    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
-        if (err) throw err
-        else{
-            ticketID = results.length+1
-            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
-            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
-                console.log(ticketID);
-                if (err) throw err;
-                
-            })
-            
-            connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
-            + `(?, ?, ?, ?, ?, ?,?)`
-            , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
-                console.log("~~~~~~~~~~")
-                console.log(agent_email);
-                console.log(customer_email)
-                if (err) {
-                    console.log(err);
-                    res.json({'status': 'invaliderr'})
+    try {
+        const customer = await stripe.customers.create ({
+            email: req.body.token.email,
+            source: req.body.token.id
+        })
+        //const idempotency_key = uuid()
+        //console.log("HERE 223");
+        //console.log("KEY:", idempotency_key);
+        const charge = await stripe.charges.create({
+                amount: base_price * 100,
+                currency: "usd",
+                customer: customer.id,
+                receipt_email: req.body.token.email,
+                description: "Purchased ticket for flight# " + flight_number + " on " + airline_name,
+                shipping: {
+                    name: req.body.token.card.name,
+                    address: {
+                        line1: req.body.token.card.address_line1,
+                        line2: req.body.token.card.address_line2,
+                        city: req.body.token.card.address_city,
+                        country: req.body.token.card.address_country,
+                        postal_code: req.body.token.card.address_zip
+                    }
                 }
-                else res.json({'status': 'insertssuccessful'}) 
-            })
-        }
-    })
+            }, function (err, success) {
+                if (err) console.log(err);
+                else {
+                    let ticketID = 0
+                    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
+                        if (err) throw err
+                        else{
+                            ticketID = results.length+1
+                            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
+                            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                                console.log(ticketID);
+                                if (err) throw err;
+                                
+                            })
+                            
+                            connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
+                            + `(?, ?, ?, ?, ?, ?,?)`
+                            , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                                console.log("~~~~~~~~~~")
+                                console.log(agent_email);
+                                console.log(customer_email)
+                                if (err) {
+                                    console.log(err);
+                                    res.json({'status': 'invaliderr'})
+                                }
+                                else res.json({'status': 'insertssuccessful'}) 
+                            })
+                        }
+                    })
+                              
+                } 
+            }
+        )
+
+    } catch(e) {
+        console.log("here");
+        res.json({'status': 'invaliderr'})
+    }
 })
 
 app.get('/api/agent/:agentEmail/viewMyCommission', function(req, res){
@@ -628,7 +668,7 @@ app.post('/api/staff/viewFlights', function(req, res){
     const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() + 1)
     const dateIn1Month = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    console.log(dateToday, dateIn1Month, airline_name)
+    //console.log(dateToday, dateIn1Month, airline_name)
 
     if (startDate == undefined){ //if we are not give a range, the default range is the next month
         startDate = dateToday
@@ -645,6 +685,8 @@ app.post('/api/staff/viewFlights', function(req, res){
     // console.log(arrive_airport_name)
     // console.log(depart_city)
     // console.log(arrive_city)
+    console.log('startDate', startDate);
+    console.log('endDate', endDate);
     connection.query(`
     select *
     from allFlights
@@ -653,8 +695,8 @@ app.post('/api/staff/viewFlights', function(req, res){
     and arrive_airport_name LIKE ? 
     and depart_city LIKE ?
     and arrive_city LIKE ?
-    `,[airline_name, startDate, endDate, depart_airport_name, arrive_airport_name, depart_city, arrive_city] ,function (err, results, fields){
-        console.log(results);
+    `,[airline_name, startDate,endDate,depart_airport_name, arrive_airport_name, depart_city, arrive_city] ,function (err, results, fields){
+        //console.log(results);
         if (err) res.json({'status': 'invalid'})
         else if(results.length == 0) res.json({'status': 'invalidempty'}) 
         else {
@@ -747,6 +789,7 @@ app.post('/api/staff/createFlight', function(req, res){
 
 app.post('/api/staff/changeStatus', function(req, res){
     let newStatus = req.body.status
+    console.log('newStatus', newStatus);
     let airline_name = req.body.airline_name
     let flight_number = req.body.flight_number
     let depart_date = req.body.depart_date
@@ -961,11 +1004,12 @@ app.get('/api/staff/frequentCustomer/:airline_name', async function(req, res){
     }
 })
 
-app.get('/api/staff/viewReports', function(req, res){
-    let airline_name = req.body.airline_name
+app.post('/api/staff/viewReports', function(req, res){
+    let airline_name = req.query.airline_name
     let startDate = req.body.startDate
     let endDate = req.body.endDate
-    let timeFlag = req.body.timeFlag //can be last "month" or last "year"
+    let timeFlag = req.query.timeFlag //can be last "month" or last "year"
+    console.log('flag', timeFlag);
     let today = new Date();
     const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() - 1)
@@ -995,11 +1039,11 @@ app.get('/api/staff/viewReports', function(req, res){
 })
 
 app.get('/api/staff/revenue', function(req, res){
-    let cusOrAgent = req.body.cusOrAgent
-    let airline_name = req.body.airline_name
+    let cusOrAgent = req.query.cusOrAgent
+    let airline_name = req.query.airline_name
     let startDate = req.body.startDate
     let endDate = req.body.endDate
-    let timeFlag = req.body.timeFlag //can be last "month" or last "year"
+    let timeFlag = req.query.timeFlag //can be last "month" or last "year"
     let today = new Date();
     const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     today.setMonth(today.getMonth() - 1)
@@ -1063,16 +1107,19 @@ app.post('/api/staff/topDestinations', function(req, res){
     connection.query(`
     SELECT arrive_city, arrive_airport_name, count(*) as totalFlights
     FROM allPurchases NATURAL JOIN allFlights
-    WHERE depart > ? and depart_date < ? and airline_name = ?
+    WHERE depart_date > ? and depart_date < ? and airline_name = ?
     GROUP by arrive_city
     order by count(*) desc
     limit 3
     `
     ,[startDate, endDate, airline_name], function (err, results, fields){
         if (err) res.json({'status': 'invalid'})
-        resultsObj = {results}
-        console.log(resultsObj)
-        //else res.json({results})  
+        
+        else {
+            resultsObj = {results}
+            console.log("MY RESULTS:", resultsObj);
+            res.json({'status': 'succeeded', resultsObj})
+        }
     })
 })
 

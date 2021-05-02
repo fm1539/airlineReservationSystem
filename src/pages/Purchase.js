@@ -38,6 +38,7 @@ var CheckoutForm = () => {
     // } else {
     //   toast("Something went wrong", { type: "error" });
     // }
+    window.location = '/viewFlights'
   }
 
   return (

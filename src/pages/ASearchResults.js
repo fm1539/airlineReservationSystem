@@ -64,6 +64,14 @@ function ASearchResults(){
     const columns = [
         { dataField: "ID", text: 'Ticket ID' },
         { dataField: "flight_number", text: 'Flight #'},
+        { dataField: "airline_name", text: 'Airline Name'},
+        { dataField: "depart_date", text: 'Departure Date'},
+        { dataField: "depart_time", text: 'Departure Time'},
+        { dataField: "arrive_date", text: 'Arrival Date'},
+        { dataField: "arrive_time", text: 'Arrival Time'},
+        { dataField: "depart_airport_name", text: 'Leaving From'},
+        { dataField: "arrive_airport_name", text: 'Arriving To'},
+        { dataField: "base_price", text: 'Base Price'},
     ]
 
     const rowEvents = {
