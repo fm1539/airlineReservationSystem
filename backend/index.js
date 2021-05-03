@@ -347,14 +347,41 @@ app.post('/api/agent/register', function(req, res){
     email = req.body.email
     password = req.body.password
 
-    connection.query("Select * from `Agent` Where 1", function (err, results, fields){
+    connection.query("Select * from `Agent` Where 1", async function (err, results, fields){
         if (err) throw err
         else{
             agent_ID = results.length+1
+
+            const account = await stripe.accounts.create({
+                type: 'express',
+                country: 'us',
+                email: email,
+                capabilities: {
+                  card_payments: {requested: true},
+                  transfers: {requested: true},
+                },
+                company: 'AirGo',
+                individual: {
+                    email: email
+                }
+              });
+              console.log(account);
+
+              const accountLink = await stripe.accountLinks.create({
+                account: account.id,
+                refresh_url: 'http://localhost:3000/agent',
+                return_url: 'http://localhost:3000/agent',
+                type: 'account_onboarding',
+                email: email
+              });
+
             connection.query("INSERT INTO `Agent` (`email`, `password`, `agent_ID`) VALUES"+ `(?, ?, ?)`
-            , [email, password, agent_ID], function (err, results, fields){
+            , [email, password, account.id], function (err, results, fields){
                 if (err) res.json({'status': 'invalid'})
-                else res.json({'status': 'registered'})  
+                else {
+                    console.log('accountLink', accountLink);
+                    res.json({'status': 'registered', 'accountLink': accountLink})
+                }
             })
         }
     })
@@ -370,7 +397,8 @@ app.post('/api/agent/login', function(req, res){
         if (results.length){    //if non empty result
             console.log(results[0].email);
             const agentObj = {
-                'email': results[0].email
+                'email': results[0].email,
+                'agent_ID':results[0].agent_ID
             }
             res.json({'status': 'logged', 'agentObj': agentObj})
         }
@@ -450,6 +478,7 @@ app.post('/api/agent/purchaseTickets', async (req, res) => {
     agent_email = req.body.obj.agent_email
     airline_name = req.body.obj.airline_name
     flight_number = req.body.obj.flight_number
+    const agent_ID = req.body.obj.agent_ID
     console.log('customer_email', customer_email);
     console.log('agent_email', agent_email);
     console.log('airline_name', airline_name);
@@ -525,7 +554,7 @@ app.post('/api/agent/purchaseTickets', async (req, res) => {
                             
                             connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
                             + `(?, ?, ?, ?, ?, ?,?)`
-                            , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                            , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], async function (err, results, fields){
                                 console.log("~~~~~~~~~~")
                                 console.log(agent_email);
                                 console.log(customer_email)
@@ -533,7 +562,14 @@ app.post('/api/agent/purchaseTickets', async (req, res) => {
                                     console.log(err);
                                     res.json({'status': 'invaliderr'})
                                 }
-                                else res.json({'status': 'insertssuccessful'}) 
+                                else {
+                                    const transfer = await stripe.transfers.create({
+                                        amount: base_price * 0.20,
+                                        currency: "usd",
+                                        destination: agent_ID,
+                                    });
+                                    res.json({'status': 'insertssuccessful'}) 
+                                }
                             })
                         }
                     })

@@ -27,6 +27,7 @@ var ACheckoutForm = () => {
       depart_date: departDate,
       depart_time: departTime,
       base_price: basePrice,
+      agent_ID: JSON.parse(localStorage.getItem('agentObj')).agent_ID
   }
 
   var handleToken = async (token, addresses) => {

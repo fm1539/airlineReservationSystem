@@ -36,8 +36,13 @@ const register = (registerEvent, path) => {
 const aRegister = (registerEvent, path) => {
     axios.post('http://localhost:8000/api/agent/register', registerEvent).then( response => {
         console.log(response);
-        if (response.data.status === "registered") window.location = path
-        else alert('Username or Email already exists')
+        if (response.data.status === "registered") {
+            console.log(response);
+            window.location = response.data.accountLink.url
+        }
+        else {
+            alert('Username or Email already exists')
+        }
     })
 }
 
