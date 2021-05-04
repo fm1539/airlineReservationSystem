@@ -1,10 +1,7 @@
 import React, {useEffect, useState} from 'react'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
-import {sCheckLoggedIn, sLogout, sLogin, sRegister} from '../../global/Reducer'
-import NavBar from '../../shared/NavBar'
-import paginationFactory from 'react-bootstrap-table2-paginator'
-import BootstrapTable from 'react-bootstrap-table-next'
-import Sidebar from '../../shared/Sidebar'
+import {sCheckLoggedIn, sLogout} from '../../../global/Reducer'
+import NavBar from '../../../shared/NavBar'
+import Sidebar from '../../../shared/Sidebar'
 import axios from 'axios'
 import Flight from './Flight'
 
@@ -13,10 +10,8 @@ function Frequent(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
 
     

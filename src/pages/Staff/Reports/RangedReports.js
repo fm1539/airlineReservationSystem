@@ -1,17 +1,12 @@
-import React, {useEffect, useState} from 'react'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
-import {sCheckLoggedIn, sLogout, sLogin, sRegister} from '../../global/Reducer'
-import NavBar from '../../shared/NavBar'
-import Sidebar from '../../shared/Sidebar'
+import React, {useState} from 'react'
+import {Button, Card} from 'react-bootstrap'
+import {sCheckLoggedIn, sLogout} from '../../../global/Reducer'
+import NavBar from '../../../shared/NavBar'
+import Sidebar from '../../../shared/Sidebar'
 import axios from 'axios'
 import Chart from "react-google-charts"
 
 function RangedReports(){
-
-    const obj = {
-        1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'June',
-        7: 'July', 8: 'Aug', 9: 'Sept', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-      } 
 
     const [searchInput, setSearchInput] = useState({
         startDate: "",
@@ -40,10 +35,7 @@ function RangedReports(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
-    const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
 
     

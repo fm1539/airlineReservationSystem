@@ -5,7 +5,7 @@ function About(){
     return (
         <div>
             <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-        <Navbar.Brand href='/' style={{width: '150px'}}><img className="logo"src="./logo1.png"/></Navbar.Brand>
+        <Navbar.Brand href='/' style={{width: '150px'}}><img alt="" className="logo"src="./logo1.png"/></Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         </Navbar>
             <main role="main" className="inner cover">
@@ -28,7 +28,7 @@ function About(){
                     <Col xs>
                         <Card border="success" className="hoverEffect" style={{ borderRadius: '20px' }}>
                             <Card.Header>
-                                <img className="pfp" src="spidey.jpeg"/>
+                                <img alt="" className="pfp" src="spidey.jpeg"/>
                                 <h1 className="about-name">Isfar Oshir</h1>
                             </Card.Header>
                             <Card.Body>
@@ -36,16 +36,16 @@ function About(){
                             <Card.Text>
                             Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
                             </Card.Text>
-                            <a href="https://www.linkedin.com/in/isfar-oshir-043403190/" target="_blank" style={{paddingRight: '10px'}}><i className="fa fa-linkedin-square socialIcon"></i></a>
-                            <a href="http://www.isfaroshir.com/" target="_blank" style={{paddingRight: '10px'}}><img src="isfarcom.png" style={{height:'15px'}} /></a>
-                            <a href="https://github.com/ioshir4350?tab=stars" target="_blank"><i className="fa fa-github socialIcon" style={{color: 'black'}}></i></a>
+                            <a href="https://www.linkedin.com/in/isfar-oshir-043403190/" target="_blank" rel="noreferrer" style={{paddingRight: '10px'}}><i className="fa fa-linkedin-square socialIcon"></i></a>
+                            <a href="http://www.isfaroshir.com/" target="_blank" rel="noreferrer" style={{paddingRight: '10px'}}><img alt="" src="isfarcom.png" style={{height:'15px'}} /></a>
+                            <a href="https://github.com/ioshir4350?tab=stars" target="_blank" rel="noreferrer"><i className="fa fa-github socialIcon" style={{color: 'black'}}></i></a>
                             </Card.Body>
                         </Card>
                     </Col>
                     <Col xs>
                         <Card border="success" style={{ borderRadius: '20px' }} className="hoverEffect">
                             <Card.Header>
-                                <img className="pfp" src="spidey.jpeg"/>
+                                <img alt="" className="pfp" src="spidey.jpeg"/>
                                 <h1 className="about-name">Farhan Mashud</h1>
                             </Card.Header>
                             <Card.Body>
@@ -59,7 +59,7 @@ function About(){
                     <Col xs>
                         <Card border="success" className="hoverEffect" style={{ borderRadius: '20px' }}>
                             <Card.Header>
-                                <img className="pfp" src="spidey.jpeg"/>
+                                <img alt="" className="pfp" src="spidey.jpeg"/>
                                 <h1 className="about-name">Mohammed Uddin</h1>
                             </Card.Header>
                             <Card.Body>

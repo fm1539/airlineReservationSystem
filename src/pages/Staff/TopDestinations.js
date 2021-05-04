@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../shared/NavBar'
-import Chart from "react-google-charts"
-import Sidebar from '../shared/Sidebar'
-import {sLogout, sCheckLoggedIn} from '../global/Reducer'
-import { Table, Tab, Tabs, Modal, Button, Row, Nav, Col } from 'react-bootstrap';
+import Sidebar from '../../shared/Sidebar'
+import {sCheckLoggedIn} from '../../global/Reducer'
 import axios from 'axios'
 
 function TopDestinations() {
@@ -60,7 +57,7 @@ function TopDestinations() {
                 <option>Past Year</option>
             </select>
                            
-            {view == "month" ? 
+            {view === "month" ? 
             <div>
                 <table style={{width: '100%'}}>
                     <caption>Top Destinations</caption>
@@ -80,7 +77,7 @@ function TopDestinations() {
                         <td>$100</td> */}
                     
                 </table>
-            </div> : view == "year" ?
+            </div> : view === "year" ?
             <div>
                 <table style={{width: '100%'}}>
                     <caption>Top Destinations</caption>

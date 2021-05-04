@@ -1,44 +1,73 @@
-import React, {useEffect, useState} from 'react'
-import NavBar from '../shared/NavBar'
+import React, {useState, useEffect} from 'react'
+import NavBar from '../../shared/NavBar'
 import axios from 'axios'
-import {login, logout, checkLoggedIn, register} from '../global/Reducer'
-import {Modal, Button, Pagination} from 'react-bootstrap'
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
-import BootstrapTable from 'react-bootstrap-table-next'
-import paginationFactory from 'react-bootstrap-table2-paginator'
+import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col} from 'react-bootstrap'
+import {login, logout, checkLoggedIn, register} from '../../global/Reducer'
 
-function SearchResults(){
-
+function HomePage(){
     const [show, setShow] = useState(false);
-    const [show2, setShow2] = useState(false);
-    const [flights, setFlights] = useState([])
+    const [show2, setShow2] = useState(false)
+
+    const [cities, setCities] = useState([])
+    const [airports, setAirports] = useState([])
 
     const [loginEvent, setLoginEvent] = useState({
         email: "",
         password: ""
     })
 
-    const flightHandler = (arr) => setFlights(arr)
-    
+    const [searchInput, setSearchInput] = useState({
+        leaving: "",
+        going: "",
+        depart_date: ""
+    }) 
 
-    useEffect(async ()=>{
-        var search = window.location.search
-        const response = await axios.get('http://localhost:8000/api/customer/searchForFlights'+search)
-        console.log(response);
-        if (response.data.status !== 'invalidempty'){
-            flightHandler(response.data.flightsArr);
-            console.log(response);
-        } 
+
+    useEffect(()=> {
+        axios.get('http://localhost:8000/api/customer/getAllAirports').then( response => airportHandler(response.data.results))
+        axios.get('http://localhost:8000/api/customer/getAllCities').then( response => cityHandler(response.data.results)) 
     }, [])
 
+    const cityHandler =(arr) => setCities(arr)
+    const airportHandler = (arr) => setAirports(arr)
     const loginChangeHandler = (event) => {
         setLoginEvent({
             ...loginEvent, 
             [event.target.name]: event.target.value
         })
     }
+    const searchChangeHandler = (event) => {
+        setSearchInput({
+            ...searchInput,
+            [event.target.name]: event.target.value
+        })
+    }
+    const searchButtonHandler = () => {
+        let obj = {
+            "sourceCity": "",
+            "sourceAirport": "",
+            "destinationCity": "",
+            "destinationAirport": "",
+            "departureDate": ""
+        }
+        if (cities.includes(searchInput.leaving)) obj["sourceCity"] = searchInput.leaving;
+        else if (airports.includes(searchInput.leaving)) obj["sourceAirport"] = searchInput.leaving;
 
-    const loginButtonHandler = () => login(loginEvent, '/searchResults'+window.location.search)
+        if (cities.includes(searchInput.going)) obj["destinationCity"] = searchInput.going;
+        else if (airports.includes(searchInput.going)) obj["destinationAirport"] = searchInput.going;
+
+        let query = ""
+        
+        for (var key in obj){
+            if (obj[key] !== "")  query += key + "=" + obj[key] + '&'
+        }
+        query = query.slice(0, query.length-1)
+        window.location = "/searchResults?" + query
+
+    }
+
+    const loginButtonHandler = () => login(loginEvent, '/')
+    
 
     const [registerEvent, setRegisterEvent] = useState({
         email: "", name: "", password: "", building_number: "",
@@ -53,46 +82,19 @@ function SearchResults(){
         })
     }
 
-    const registerButtonHandler = () => register(registerEvent, '/searchResults')
+    const registerButtonHandler = () => register(registerEvent, '/')
+
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
+
     const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
+
     let loggedIn = false
     if (checkLoggedIn()) loggedIn = true
-{/* <td>{flight.ticketID}</td>
-<td>{flight.flight_number}</td>
-<td>{flight.airline_name}</td>
-<td>{flight.depart_date}</td>
-<td>{flight.depart_time}</td>
-<td>{flight.arrive_date}</td>
-<td>{flight.arrive_time}</td>
-<td>{flight.depart_airport_name}</td>
-<td>{flight.arrive_airport_name}</td>
-<td>{flight.base_price}</td> */}
-
-    const columns = [
-        { dataField: "ID", text: 'Ticket ID' },
-        { dataField: "flight_number", text: 'Flight #'},
-        { dataField: "airline_name", text: 'Airline Name'},
-        { dataField: "depart_date", text: 'Departure Date'},
-        { dataField: "depart_time", text: 'Departure Time'},
-        { dataField: "arrive_date", text: 'Arrival Date'},
-        { dataField: "arrive_time", text: 'Arrival Time'},
-        { dataField: "depart_airport_name", text: 'Leaving From'},
-        { dataField: "arrive_airport_name", text: 'Arriving To'},
-        { dataField: "base_price", text: 'Base Price'},
-    ]
-
-    const rowEvents = {
-        onClick: (e, row, rowIndex) => {
-          if (loggedIn) window.location = '/purchase/'+row.airline_name+'/'+row.flight_number+'/'+row.depart_date+'/'+row.depart_time+'/'+row.base_price    
-          else handleShow()
-        }
-      };
 
     return (
-        <div>
+        <React.Fragment>
             {loggedIn ? <NavBar 
                 nav={[['/viewFlights', 'View My Flights'], ['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 accountManagement={[handleShow, handleShow2]}
@@ -109,6 +111,7 @@ function SearchResults(){
                 logoPath='/'
             />
         }
+            
             <Modal centered show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
                 <Modal.Title>Sign In</Modal.Title>
@@ -211,17 +214,85 @@ function SearchResults(){
                 </Button>
                 </Modal.Footer>
             </Modal>
-            <h1>Click on Row to Purchase</h1>
-            <BootstrapTable class="table-hover"
-                keyField="name"
-                data={flights}
-                columns={columns}
-                rowEvents={ rowEvents }
-                pagination={paginationFactory()}
-            />
-
-        </div>
+            <div className="search-flights-div">
+                <h1 style={{color: 'white'}}>Only One Question. Where to?</h1>
+            <Card style={{boxShadow: '0 4px 8px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%)', width:'50%', marginLeft: 'auto', marginRight: 'auto'}}>
+                    <Card.Body>
+                        <Card.Title style={{'textAlign': 'left'}}>Search Flights</Card.Title>
+                        <div style={{'display': 'flex'}}>
+                            <InputGroup className="mb-3" style={{'width': '50%'}}>
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text id="basic-addon1">Leaving</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                placeholder="From"
+                                aria-label="Username"
+                                name="leaving"
+                                onChange={searchChangeHandler}
+                                aria-describedby="basic-addon1"
+                                />
+                            </InputGroup>
+                            <div style={{'width': '10px'}}> </div>
+                            <InputGroup className="mb-3" style={{'width': '50%'}}>
+                                <InputGroup.Prepend>
+                                    <InputGroup.Text id="basic-addon1">Going</InputGroup.Text>
+                                </InputGroup.Prepend>
+                                <FormControl
+                                placeholder="To"
+                                aria-label="Username"
+                                name="going" onChange={searchChangeHandler}
+                                aria-describedby="basic-addon1"
+                                />
+                            </InputGroup>
+                        </div>
+                        <br/>
+                        <label for="depart_date">Departure Date: </label>
+                        <br/>
+                        <input name="depart_date" type="date" onChange={searchChangeHandler}/> <br/><br/>
+                        <Button onClick={searchButtonHandler}>Search</Button>
+                    </Card.Body>
+                </Card>
+            </div>
+            <h1 style={{marginTop:'20px'}}>Some of our Reviews</h1>
+            <Container style={{marginTop: '20px'}}>
+                <Row md={3}>
+                    <Col xs>
+                        <Card border="success" style={{ borderRadius: '20px' }}>
+                            <Card.Header>John Doe</Card.Header>
+                            <Card.Body>
+                            <Card.Title>Great!</Card.Title>
+                            <Card.Text>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                            </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs>
+                        <Card border="success" style={{borderRadius: '20px' }}>
+                            <Card.Header>Sarah Connor</Card.Header>
+                            <Card.Body>
+                            <Card.Title>Exquisite</Card.Title>
+                            <Card.Text>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                            </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                    <Col xs>
+                    <Card border="success" style={{ borderRadius: '20px' }}>
+                            <Card.Header>Tony Stark</Card.Header>
+                            <Card.Body>
+                            <Card.Title>Suited Me</Card.Title>
+                            <Card.Text>
+                            Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+                            </Card.Text>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+            </Container>
+        </React.Fragment>
     )
 }
 
-export default SearchResults
+export default HomePage

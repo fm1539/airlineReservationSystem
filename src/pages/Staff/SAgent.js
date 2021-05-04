@@ -1,11 +1,7 @@
 import { React, useState, useEffect } from 'react'
 import axios from 'axios'
-import Sidebar from '../shared/Sidebar'
-import NavBar from '../shared/NavBar'
-import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../global/Reducer'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
-import paginationFactory from 'react-bootstrap-table2-paginator'
-import BootstrapTable from 'react-bootstrap-table-next'
+import Sidebar from '../../shared/Sidebar'
+import {sCheckLoggedIn,} from '../../global/Reducer'
 
 function SAgent(){
 
@@ -70,7 +66,7 @@ function SAgent(){
                 <option>Past Year</option>
             </select>
                            
-            {view == "month" ? 
+            {view === "month" ? 
             <div>
                 <table style={{width: '100%'}}>
                     <caption>Monthly savings</caption>
@@ -90,7 +86,7 @@ function SAgent(){
                         <td>$100</td> */}
                     
                 </table>
-            </div> : view == "year" ?
+            </div> : view === "year" ?
             <div>
                 <table style={{width: '100%'}}>
                     <caption>Monthly savings</caption>

@@ -2,8 +2,7 @@ import React, {useState, useEffect} from 'react';
 import { ProSidebar, Menu, MenuItem, SubMenu, SidebarContent, SidebarHeader, SidebarFooter } from 'react-pro-sidebar';
 import 'react-pro-sidebar/dist/css/styles.css';
 import { NavLink } from 'react-router-dom';
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col} from 'react-bootstrap'
-import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../global/Reducer'
+import {Modal, Button} from 'react-bootstrap'
 import axios from 'axios'
 
 function Sidebar(){

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../shared/NavBar'
+import NavBar from '../../shared/NavBar'
 import Chart from "react-google-charts"
-import {aLogout, aCheckLoggedIn} from '../global/Reducer'
-import { Table, Tab, Tabs, Modal, Button, Row, Nav, Col } from 'react-bootstrap';
+import {aLogout, aCheckLoggedIn} from '../../global/Reducer'
 import axios from 'axios'
 
 function ViewTopCustomer(){
@@ -19,10 +18,8 @@ function ViewTopCustomer(){
         setCommissionsReceived(arr)
     }
 
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
     let loggedIn = false
     if (aCheckLoggedIn()){

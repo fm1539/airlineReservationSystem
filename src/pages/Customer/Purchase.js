@@ -2,17 +2,7 @@ import React from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import {useParams} from 'react-router-dom'
-import ReactDOM from 'react-dom';
-import {Button} from 'react-bootstrap'
-import {loadStripe} from '@stripe/stripe-js';
 import StripeCheckout from 'react-stripe-checkout'
-import {
-  locCardElement,
-  Elements,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
-
 import "react-toastify/dist/ReactToastify.css";
 
 toast.configure();

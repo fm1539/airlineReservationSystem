@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../shared/NavBar'
-import Chart from "react-google-charts"
-import {logout, checkLoggedIn} from '../global/Reducer'
-import { Table, Tab, Tabs, Modal, Button, Row, Nav, Col } from 'react-bootstrap';
+import NavBar from '../../shared/NavBar'
+import {logout, checkLoggedIn} from '../../global/Reducer'
+import { Tab, Button, Row, Nav, Col } from 'react-bootstrap';
 import axios from 'axios'
 
 function Commision(){
@@ -18,19 +17,16 @@ function Commision(){
     const last30Handler = (obj) => setLast30(obj)
     const rangeDateHandler = (obj) => setRangeData(obj)
 
-    const obj = {
-      1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'June',
-      7: 'July', 8: 'Aug', 9: 'Sept', 10: 'Oct', 11: 'Nov', 12: 'Dec'
-    } 
+
 
     const filterHandler = () => {
         const query = "?startDate=" + fromDate +"&endDate=" + toDate
         axios.get('http://localhost:8000/api/agent/'+JSON.parse(localStorage.getItem('agentObj')).email+'/viewMyCommission'+query)
         .then(response => rangeDateHandler(response.data.results[0]));
     }
-    const handleClose = () => setShow(false);
+  
     const handleShow = () => setShow(true);
-    const handleClose2 = () => setShow2(false);
+
     const handleShow2 = () => setShow2(true);
     let loggedIn = false
     if (checkLoggedIn()) loggedIn = true

@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react'
-import NavBar from '../shared/NavBar'
+import NavBar from '../../shared/NavBar'
 import axios from 'axios'
-import {aLogin, aLogout, aCheckLoggedIn, aRegister} from '../global/Reducer'
-import {Modal, Button, Pagination} from 'react-bootstrap'
+import {aLogin, aLogout, aCheckLoggedIn, aRegister} from '../../global/Reducer'
+import {Modal, Button} from 'react-bootstrap'
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory from 'react-bootstrap-table2-paginator'
@@ -20,13 +20,16 @@ function ASearchResults(){
 
     const flightHandler = (arr) => setFlights(arr)
 
-    useEffect(async ()=>{
+    useEffect(()=>{
+        async function fetchData(){
         var search = window.location.search
         // console.log(JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}'))
         console.log(search);
         const response = await axios.get('http://localhost:8000/api/agent/searchForFlights'+search)
         console.log(response);
         if (response.data.status !== 'invalidempty') flightHandler(response.data.flightsArr);
+        }
+        fetchData()
     }, [])
 
     const loginChangeHandler = (event) => {

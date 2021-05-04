@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from 'react'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
-import {sCheckLoggedIn, sLogout, sLogin, sRegister} from '../global/Reducer'
-import NavBar from '../shared/NavBar'
-import Sidebar from '../shared/Sidebar'
+import {sCheckLoggedIn, sLogout} from '../../global/Reducer'
+import NavBar from '../../shared/NavBar'
+import Sidebar from '../../shared/Sidebar'
 import axios from 'axios'
 import Chart from "react-google-charts"
 
@@ -24,10 +23,8 @@ function Comparison(){
         })
     }
 
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
     let loggedIn = false
     if (sCheckLoggedIn()) loggedIn = true

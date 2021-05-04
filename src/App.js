@@ -1,37 +1,30 @@
-import Button from 'react-bootstrap/Button';
 import {BrowserRouter as Router} from 'react-router-dom'
 import {Route, Switch, Redirect} from 'react-router-dom'
-import HomePage from './pages/HomePage'
-import SearchResults from './pages/SearchResults';
-import ASearchResults from './pages/ASearchResults';
-import ViewFlights from './pages/ViewFlights'
-import AViewFlights from './pages/AViewFlights'
-import CheckoutForm from './pages/Purchase'
-import ACheckoutForm from './pages/APurchase'
+import HomePage from './pages/Customer/HomePage'
+import SearchResults from './pages/Customer/SearchResults';
+import ASearchResults from './pages/Agent/ASearchResults';
+import ViewFlights from './pages/Customer/ViewFlights'
+import AViewFlights from './pages/Agent/AViewFlights'
+import CheckoutForm from './pages/Customer/Purchase'
+import ACheckoutForm from './pages/Agent/APurchase'
 import React from 'react';
-import ReactDOM from 'react-dom';
-import TrackSpender from './pages/TrackSpending'
-import AHomePage from './pages/AHomePage'
-import SHomePage from './pages/SHomePage'
-import ViewTopCustomer from './pages/ViewTopCustomer'
+import TrackSpender from './pages/Customer/TrackSpending'
+import AHomePage from './pages/Agent/AHomePage'
+import SHomePage from './pages/Staff/SHomePage'
+import ViewTopCustomer from './pages/Agent/ViewTopCustomer'
 import About from './pages/About'
-import AirplaneConfirmation from './pages/AirplaneConfirmation'
-import SAgent from './pages/SAgent'
-import Frequent from './pages/Frequent/Frequent'
-import LastYear1 from './pages/Reports/LastYear1'
-import LastMonth from './pages/Reports/LastMonth'
-import RangedReports from './pages/Reports/RangedReports'
-import Comparison from './pages/Comparison'
+import AirplaneConfirmation from './pages/Staff/AirplaneConfirmation'
+import SAgent from './pages/Staff/SAgent'
+import Frequent from './pages/Staff/Frequent/Frequent'
+import LastYear1 from './pages/Staff/Reports/LastYear1'
+import LastMonth from './pages/Staff/Reports/LastMonth'
+import RangedReports from './pages/Staff/Reports/RangedReports'
+import Comparison from './pages/Staff/Comparison'
 import {loadStripe} from '@stripe/stripe-js';
-import {
-  CardElement,
-  Elements,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
-import Commision from './pages/Commision'
-import RangeFlights from './pages/RangeFlights';
-import TopDestinations from './pages/TopDestinations'
+import {Elements} from '@stripe/react-stripe-js';
+import Commision from './pages/Agent/Commision'
+import RangeFlights from './pages/Staff/RangeFlights';
+import TopDestinations from './pages/Staff/TopDestinations'
 
 <Route path="/" exact>
           {JSON.parse(localStorage.getItem('userObj')) ?

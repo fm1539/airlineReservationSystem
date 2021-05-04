@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react'
-import NavBar from '../shared/NavBar'
+import NavBar from '../../shared/NavBar'
 import axios from 'axios'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
-import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../global/Reducer'
-import Sidebar from '../shared/Sidebar'
+import {Modal, Button, Tab, Tabs} from 'react-bootstrap'
+import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../../global/Reducer'
+import Sidebar from '../../shared/Sidebar'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 import BootstrapTable from 'react-bootstrap-table-next'
 
@@ -165,7 +165,6 @@ function SHomePage(){
         })   
     }
 
-    let custInfo = <p>Loading...</p>
 
     const columns = [
         { dataField: "airline_name", text: 'Airline Name' },
@@ -181,14 +180,6 @@ function SHomePage(){
         { dataField: "flight_number", text: 'Flight Number'},
         { dataField: "status", text: 'Status'},
     ]
-    const data = [
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'}
-    ]
-
-    const handler =(event) => console.log(event.target.value)
     
     const changeStatus = {
         onClick: (e, row, rowIndex) => {

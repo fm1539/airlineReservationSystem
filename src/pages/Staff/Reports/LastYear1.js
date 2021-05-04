@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from 'react'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
-import {sCheckLoggedIn, sLogout, sLogin, sRegister} from '../../global/Reducer'
-import NavBar from '../../shared/NavBar'
-import Sidebar from '../../shared/Sidebar'
+import {sCheckLoggedIn, sLogout} from '../../../global/Reducer'
+import NavBar from '../../../shared/NavBar'
+import Sidebar from '../../../shared/Sidebar'
 import axios from 'axios'
 import Chart from "react-google-charts"
 
-function LastMonth(){
+function LastYear1(){
 
     const obj = {
         1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'June',
@@ -16,10 +15,9 @@ function LastMonth(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleClose2 = () => setShow2(false);
+
     const handleShow2 = () => setShow2(true);
 
     
@@ -28,11 +26,13 @@ function LastMonth(){
 
     const [data, setData] = useState([])
 
-    const dataHandler = (arr) => setData(arr)
+    const dataHandler = (arr) => {
+        setData(arr)
+    }
 
 
     useEffect(() => {
-        axios.post('http://localhost:8000/api/staff/viewReports?timeFlag=month&airline_name='+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        axios.post('http://localhost:8000/api/staff/viewReports?timeFlag=year&airline_name='+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
             console.log(response);
             let arr = [['Month', 'Tickets']]
             response.data.forEach(element => {
@@ -41,7 +41,6 @@ function LastMonth(){
                 arr.push([obj[element.month], element.ticketsSold])
             });
             console.log('arr', arr);
-            console.log(arr);
             dataHandler(arr)
         })
     }, [])
@@ -68,8 +67,7 @@ function LastMonth(){
         <div>
             <Sidebar />
             <div style={{marginLeft: '270px', paddingTop: '80px'}}>
-                <h1>Last Month</h1>
-                {data.length > 1 ?
+                <h1>Last Year</h1>
                 <Chart
                 style={{marginLeft: 'auto', marginRight: 'auto', marginTop: '5vh', marginBottom: '10vh'}}
                 width={1000}
@@ -90,15 +88,10 @@ function LastMonth(){
                 }}
                 legendToggle
                 />
-                :
-                null
-
-                }
-                
             </div>
         </div>
     </React.Fragment>
     )
 }
 
-export default LastMonth
+export default LastYear1

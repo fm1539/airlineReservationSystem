@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import NavBar from '../shared/NavBar'
+import NavBar from '../../shared/NavBar'
 import Chart from "react-google-charts"
-import {logout, checkLoggedIn} from '../global/Reducer'
-import { Table, Tab, Tabs, Modal, Button, Row, Nav, Col } from 'react-bootstrap';
+import {logout, checkLoggedIn} from '../../global/Reducer'
+import { Tab, Button, Row, Nav, Col } from 'react-bootstrap';
 import axios from 'axios'
 
 function TrackSpender(){
@@ -48,10 +48,7 @@ function TrackSpender(){
         rangeDateHandler(arr);
         })
     }
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
-
-    const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
     let loggedIn = false
     if (checkLoggedIn()){

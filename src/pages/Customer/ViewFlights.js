@@ -1,14 +1,14 @@
 import React, {useState, useEffect} from 'react'
-import NavBar from '../shared/NavBar'
+import NavBar from '../../shared/NavBar'
 import axios from 'axios'
-import { Table, Tab, Tabs, Modal, Button } from 'react-bootstrap';
-import {aLogout} from '../global/Reducer'
+import { Tab, Tabs, Modal, Button } from 'react-bootstrap';
+import {logout} from '../../global/Reducer'
 
 import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import BootstrapTable from 'react-bootstrap-table-next'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 
-function AViewFlights(){
+function ViewFlights(){
 
     const [flights, setFlights] = useState([])
 
@@ -30,18 +30,16 @@ function AViewFlights(){
     }
 
     const rowInfoHandler = (info) => setRowInfo(info)
-
     const [show, setShow] = useState(false)
     const handleShow = () => setShow(true);
     const handleClose = () => setShow(false);
 
     const today = new Date();
-    const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     
     const flightsHandler = (arr) => setFlights(arr)
     const pastHandler = (arr) => setPast(arr)
     const futureHandler = (arr) => setFuture(arr)
-    
+
     useEffect(() => {
         let pastArr = []
         let futureArr = []
@@ -53,11 +51,19 @@ function AViewFlights(){
             if (parseInt(departYear) > today.getFullYear) futureArr.push(flight)
             else if(parseInt(departYear) < parseInt(today.getFullYear())) pastArr.push(flight)
             else{
-                if (parseInt(departMonth) < parseInt(today.getMonth())) pastArr.push(flight) 
-                else if(parseInt(departMonth) > parseInt(today.getMonth())) futureArr.push(flight)
+                if (parseInt(departMonth) < parseInt(today.getMonth())) {
+                    pastArr.push(flight) 
+                }
+                else if(parseInt(departMonth) > parseInt(today.getMonth())) {
+                    futureArr.push(flight)
+                }
                 else{
-                    if (parseInt(departDay) < parseInt(today.getDate())) pastArr.push(flight)
-                    else futureArr.push(flight)
+                    if (parseInt(departDay) < parseInt(today.getDate())) {
+                        pastArr.push(flight)
+                    }
+                    else{
+                        futureArr.push(flight)
+                    }
                 }
             }
         });
@@ -66,8 +72,10 @@ function AViewFlights(){
     }, [flights])
     
     useEffect(() => {
-        axios.get('http://localhost:8000/api/agent/' + JSON.parse(localStorage.getItem('agentObj')).email + '/viewFlights').then( response => {
-            if (response.data.status == 'success') flightsHandler(response.data.flightObj.results) 
+        axios.get('http://localhost:8000/api/customer/' + JSON.parse(localStorage.getItem('custObj')).email + '/viewFlights').then( response => {
+            if (response.data.status === 'success'){
+                flightsHandler(response.data.futureFlightObj.results)
+            }
         })
     }, []) 
     
@@ -86,6 +94,7 @@ function AViewFlights(){
 
     const reviewAction = {
         onClick: (e, row, rowIndex) => {
+          console.log(row);
           //save specific row info to a state
           rowInfoHandler(row)
 
@@ -103,17 +112,20 @@ function AViewFlights(){
             rating: review.rating,
             comments: review.comments
         }
+        console.log(obj);
         axios.post('http://localhost:8000/api/customer/'+JSON.parse(localStorage.getItem('custObj')).email+'/giveRating', obj)
-        .then(response => handleClose())
+        .then(response => {
+            handleClose()
+        })
     }
 
     return (
         <div>
             <NavBar 
-                nav={[['/aViewFlights', 'View My Flights'],['/viewTop', 'View Top Customers'], ['#pricing', 'Flight Tracker']]} 
+                nav={[['/viewFlights', 'View My Flights'],['/trackSpending', 'Track Spending'], ['#pricing', 'Flight Tracker']]} 
                 loggedIn = {true}
-                logOut = {aLogout}
-                logoPath="/agent"
+                logOut = {logout}
+                logoPath = '/'
             />
             <Modal show={show} onHide={handleClose}>
                 <Modal.Header closeButton>
@@ -143,7 +155,7 @@ function AViewFlights(){
                 </Modal.Footer>
             </Modal>
             <h1 style={{textAlign: 'left', marginLeft: '10%', marginTop: '2vh'}}>My Flights</h1>
-            <Tabs defaultActiveKey="profile" id="uncontrolled-tab-example">
+            <Tabs defaultActiveKey="future" id="uncontrolled-tab-example">
                 <Tab eventKey="past" title="Past Flights">
                 <h1>Click on Row to Review</h1>
                 <BootstrapTable class="table-hover"
@@ -171,7 +183,7 @@ function AViewFlights(){
 
 }
 
-export default AViewFlights
+export default ViewFlights
 
 
 

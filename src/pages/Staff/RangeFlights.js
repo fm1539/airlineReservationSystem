@@ -1,9 +1,9 @@
 import {React, useState, useEffect}  from 'react'
 import axios from 'axios'
-import Sidebar from '../shared/Sidebar'
-import NavBar from '../shared/NavBar'
-import {sLogin, sLogout, sCheckLoggedIn, sRegister} from '../global/Reducer'
-import {InputGroup, FormControl, Modal, Button, Card, Container, Row, Col, Tab, Tabs} from 'react-bootstrap'
+import Sidebar from '../../shared/Sidebar'
+import NavBar from '../../shared/NavBar'
+import {sLogout, sCheckLoggedIn} from '../../global/Reducer'
+import {InputGroup, FormControl, Modal, Button, Card, Tab, Tabs} from 'react-bootstrap'
 import paginationFactory from 'react-bootstrap-table2-paginator'
 import BootstrapTable from 'react-bootstrap-table-next'
 
@@ -47,10 +47,8 @@ function RangeFlights(){
     const [show, setShow] = useState(false);
     const [show2, setShow2] = useState(false)
 
-    const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    const handleClose2 = () => setShow2(false);
     const handleShow2 = () => setShow2(true);
 
     const [cities, setCities] = useState([])
@@ -144,12 +142,7 @@ function RangeFlights(){
         { dataField: "flight_number", text: 'Flight Number'},
         { dataField: "status", text: 'Status'},
     ]
-    const data = [
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'},
-        {ticketID: 1, flight_number: 1, airline_name: 'Delta'}
-    ]
+
     let pT = "200px"
     if (searchResults.length > 0) pT = '100px'
 
