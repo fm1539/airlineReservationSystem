@@ -348,10 +348,10 @@ app.post('/api/agent/register', function(req, res){
     password = req.body.password
 
     connection.query("Select * from `Agent` Where 1", async function (err, results, fields){
-        if (err) throw err
+        if (err) console.log(err);
         else{
             agent_ID = results.length+1
-
+            try {
             const account = await stripe.accounts.create({
                 type: 'express',
                 country: 'us',
@@ -360,29 +360,28 @@ app.post('/api/agent/register', function(req, res){
                   card_payments: {requested: true},
                   transfers: {requested: true},
                 },
-                company: 'AirGo',
-                individual: {
-                    email: email
-                }
               });
-              console.log(account);
 
               const accountLink = await stripe.accountLinks.create({
                 account: account.id,
                 refresh_url: 'http://localhost:3000/agent',
                 return_url: 'http://localhost:3000/agent',
-                type: 'account_onboarding',
-                email: email
+                type: 'account_onboarding'
               });
+            
 
             connection.query("INSERT INTO `Agent` (`email`, `password`, `agent_ID`) VALUES"+ `(?, ?, ?)`
             , [email, password, account.id], function (err, results, fields){
-                if (err) res.json({'status': 'invalid'})
+                if (err) {
+                    console.log(err);
+                    res.json({'status': 'invalid'})
+                }
                 else {
                     console.log('accountLink', accountLink);
                     res.json({'status': 'registered', 'accountLink': accountLink})
                 }
             })
+        } catch(err){console.log(err);}
         }
     })
 });
@@ -391,11 +390,12 @@ app.post('/api/agent/login', function(req, res){
     email = req.body.email
     password = req.body.password
 
-    connection.query(`SELECT email FROM Agent WHERE email = ? and password = ?`, [email, password],function (err, results, fields){
+    connection.query(`SELECT email,agent_ID FROM Agent WHERE email = ? and password = ?`, [email, password],function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
 
         if (results.length){    //if non empty result
             console.log(results[0].email);
+            console.log(results[0].agent_ID);
             const agentObj = {
                 'email': results[0].email,
                 'agent_ID':results[0].agent_ID
@@ -492,11 +492,11 @@ app.post('/api/agent/purchaseTickets', async (req, res) => {
     console.log('base_price', base_price);
     console.log(req.body.token);
 
-    connection.query("Select email from `Customer` Where email=?", [customer_email], (err, results, fields) => {
+    connection.query("Select email from `Customer` Where email=?", [customer_email], async (err, results, fields) => {
         if (err) throw err;
         else{
             if (results.length === 0){
-                connection.query("Select email from `Agent` Where email=?", [customer_email], (err, results, fields) => {
+                connection.query("Select email from `Agent` Where email=?", [customer_email], async (err, results, fields) => {
                     if (err) throw err;
                     else{
                         if (results.length){
@@ -510,78 +510,83 @@ app.post('/api/agent/purchaseTickets', async (req, res) => {
                     }
                 })
             }
+
+            else{
+                try {
+                    const customer = await stripe.customers.create ({
+                        email: req.body.token.email,
+                        source: req.body.token.id
+                    })
+                    //const idempotency_key = uuid()
+                    //console.log("HERE 223");
+                    //console.log("KEY:", idempotency_key);
+                    const charge = await stripe.charges.create({
+                            amount: base_price * 100,
+                            currency: "usd",
+                            customer: customer.id,
+                            receipt_email: req.body.token.email,
+                            description: "Purchased ticket for flight# " + flight_number + " on " + airline_name,
+                            shipping: {
+                                name: req.body.token.card.name,
+                                address: {
+                                    line1: req.body.token.card.address_line1,
+                                    line2: req.body.token.card.address_line2,
+                                    city: req.body.token.card.address_city,
+                                    country: req.body.token.card.address_country,
+                                    postal_code: req.body.token.card.address_zip
+                                }
+                            }
+                        }, function (err, success) {
+                            if (err) console.log(err);
+                            else {
+                                let ticketID = 0
+                                connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
+                                    if (err) throw err
+                                    else{
+                                        ticketID = results.length+1
+                                        connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
+                                        , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
+                                            console.log(ticketID);
+                                            if (err) throw err;
+                                            
+                                        })
+                                        
+                                        connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
+                                        + `(?, ?, ?, ?, ?, ?,?)`
+                                        , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], async function (err, results, fields){
+                                            console.log("~~~~~~~~~~")
+                                            console.log(agent_email);
+                                            console.log(customer_email)
+                                            if (err) {
+                                                console.log(err);
+                                                res.json({'status': 'invaliderr'})
+                                            }
+                                            else {
+                                                try{
+                                                const transfer = await stripe.transfers.create({
+                                                    amount: base_price * 100 * 0.20,
+                                                    currency: "usd",
+                                                    destination: agent_ID,
+                                                });
+                                                console.log('transfer', transfer);
+                                                res.json({'status': 'insertssuccessful'}) 
+                                            } catch(err){} 
+                                            }
+                                        })
+                                    }
+                                })
+                                          
+                            } 
+                        }
+                    )
+            
+                } catch(e) {}
+
+            }
         }    
     })
 
-    try {
-        const customer = await stripe.customers.create ({
-            email: req.body.token.email,
-            source: req.body.token.id
-        })
-        //const idempotency_key = uuid()
-        //console.log("HERE 223");
-        //console.log("KEY:", idempotency_key);
-        const charge = await stripe.charges.create({
-                amount: base_price * 100,
-                currency: "usd",
-                customer: customer.id,
-                receipt_email: req.body.token.email,
-                description: "Purchased ticket for flight# " + flight_number + " on " + airline_name,
-                shipping: {
-                    name: req.body.token.card.name,
-                    address: {
-                        line1: req.body.token.card.address_line1,
-                        line2: req.body.token.card.address_line2,
-                        city: req.body.token.card.address_city,
-                        country: req.body.token.card.address_country,
-                        postal_code: req.body.token.card.address_zip
-                    }
-                }
-            }, function (err, success) {
-                if (err) console.log(err);
-                else {
-                    let ticketID = 0
-                    connection.query("Select * from `Ticket` Where 1", function (err, results, fields){
-                        if (err) throw err
-                        else{
-                            ticketID = results.length+1
-                            connection.query("INSERT INTO `Ticket` (`ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"+ `(?, ?, ?, ?, ?)`
-                            , [ticketID,airline_name,flight_number,depart_date,depart_time], function (err, results, fields){
-                                console.log(ticketID);
-                                if (err) throw err;
-                                
-                            })
-                            
-                            connection.query("INSERT INTO `Agent_Purchases` (`agent_email`, `customer_email`, `ticketID`, `airline_name`, `flight_number`, `depart_date`, `depart_time`) VALUES"
-                            + `(?, ?, ?, ?, ?, ?,?)`
-                            , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], async function (err, results, fields){
-                                console.log("~~~~~~~~~~")
-                                console.log(agent_email);
-                                console.log(customer_email)
-                                if (err) {
-                                    console.log(err);
-                                    res.json({'status': 'invaliderr'})
-                                }
-                                else {
-                                    const transfer = await stripe.transfers.create({
-                                        amount: base_price * 0.20,
-                                        currency: "usd",
-                                        destination: agent_ID,
-                                    });
-                                    res.json({'status': 'insertssuccessful'}) 
-                                }
-                            })
-                        }
-                    })
-                              
-                } 
-            }
-        )
-
-    } catch(e) {
-        console.log("here");
-        res.json({'status': 'invaliderr'})
-    }
+    
 })
 
 app.get('/api/agent/:agentEmail/viewMyCommission', function(req, res){
