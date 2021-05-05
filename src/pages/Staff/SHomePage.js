@@ -13,6 +13,7 @@ function SHomePage(){
     const [airports, setAirports] = useState([])
     const [allFlights, setAllFlights] = useState([])
     const [statusPopup, setStatusPopup] = useState(false)
+    const [airlines, setAllAirlines] = useState([])
     const [status, setStatus] = useState({
         customers: []
     })
@@ -32,6 +33,10 @@ function SHomePage(){
             ...flight,
             [event.target.name]: event.target.value
         })
+    }
+
+    const airlineHandler = (arr) => {
+        setAllAirlines(arr)
     }
 
     useEffect(()=> {
@@ -105,11 +110,20 @@ function SHomePage(){
             })
         
             axios.get('http://localhost:8000/api/staff/getAllAirports').then( response => {
+                console.log(response)
                 let arr = []
                 response.data.results.forEach(airport => {
                     arr.push([airport.name, true, true])
                 });
                 airportHandler(arr)
+            })
+        }
+        else{
+            axios.get('http://localhost:8000/api/staff/getAllAirlines').then(response => {
+                console.log(response);
+                if (response.data.status === "success"){
+                    airlineHandler(response.data.airlines)
+                }
             })
         }
     }, [])
@@ -266,7 +280,17 @@ function SHomePage(){
                         <br /><br />
                         <label>Airline Name</label>
                         <br/>
-                        <input type="text" name="airline_name" placeholder="Airline Name" onChange={registerChangeHandler} required/>
+                        <select name="airline_name" onChange={registerChangeHandler}>
+                            <option></option>
+                            {
+                            airlines.map((airline) => {
+                                return (
+                                    <option value={airline.name}>{airline.name}</option>
+                                )
+                            })
+                              
+                            }
+                        </select>
                         <br /><br />
                     </form>
                 </Modal.Body>

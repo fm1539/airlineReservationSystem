@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')   //import
 require('dotenv').config()
 const stripeSecretKey = "sk_test_51IPVGeE1OhnzAuXA6O5DHCEnFoFn83P8Bm9IqUDf7uHctArxPDKPDBPU0UggytN4jWrxgr70KcXr5hzbUpMURyv9006YzplFOn" 
 const stripe = require ('stripe')(stripeSecretKey)
-
+const md5 = require('md5')
 const app = express()               // creating an instance of express
    
 app.use((req, res, next) => {
@@ -51,7 +51,7 @@ connection2.configure({
 
 app.post('/api/customer/register', function(req, res){
     
-    var arr = [req.body.email,req.body.name,req.body.password,req.body.building_number,req.body.street,req.body.city,req.body.state,
+    var arr = [req.body.email,req.body.name,md5(req.body.password),req.body.building_number,req.body.street,req.body.city,req.body.state,
         req.body.phone_number,req.body.passport_number,req.body.passport_expiration,req.body.passport_country,req.body.date_of_birth]
     let dynamic = ''
     arr.forEach((element, index) => {
@@ -74,7 +74,7 @@ app.post('/api/customer/register', function(req, res){
 
 app.post('/api/customer/login', function(req, res){
     email = req.body.email
-    password = req.body.password
+    password = md5(req.body.password)
 
     connection.query("SELECT email FROM Customer WHERE email ='" + email + "' and password ='" + password + "'", function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
@@ -345,7 +345,7 @@ app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
 
 app.post('/api/agent/register', function(req, res){
     email = req.body.email
-    password = req.body.password
+    password = md5(req.body.password)
 
     connection.query("Select * from `Agent` Where 1", async function (err, results, fields){
         if (err) console.log(err);
@@ -388,7 +388,7 @@ app.post('/api/agent/register', function(req, res){
 
 app.post('/api/agent/login', function(req, res){
     email = req.body.email
-    password = req.body.password
+    password = md5(req.body.password)
 
     connection.query(`SELECT email,agent_ID FROM Agent WHERE email = ? and password = ?`, [email, password],function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
@@ -652,9 +652,23 @@ app.get('/api/agent/:agentEmail/topCustomers', function(req, res){
     })
 })
 
+app.get('/api/staff/getAllAirlines', function(req,res){
+    console.log("here");
+    connection.query('Select name From Airline', function(err, results, fields){
+        if (err) {
+            console.log(err);
+            res.json({'status': 'error'})
+        }
+        else {
+            console.log(results);
+            res.json({'status': 'success', 'airlines': results})
+        }
+    })
+})
+
 app.post('/api/staff/register', function(req, res){
     const username = req.body.username
-    const password = req.body.password
+    const password = md5(req.body.password)
     const first_name = req.body.first_name
     const last_name = req.body.last_name
     const date_of_birth = req.body.date_of_birth
@@ -674,7 +688,7 @@ app.post('/api/staff/register', function(req, res){
 
 app.post('/api/staff/login', function(req, res){
     username = req.body.username
-    password = req.body.password
+    password = md5(req.body.password)
 
     connection.query(`SELECT username, airline_name FROM Airline_Staff WHERE username = ? and password = ?`, [username, password],function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})

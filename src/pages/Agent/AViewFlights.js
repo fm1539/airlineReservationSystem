@@ -142,7 +142,7 @@ function AViewFlights(){
                 </Modal.Footer>
             </Modal>
             <h1 style={{textAlign: 'left', marginLeft: '10%', marginTop: '2vh'}}>My Flights</h1>
-            <Tabs defaultActiveKey="profile" id="uncontrolled-tab-example">
+            <Tabs defaultActiveKey="future" id="uncontrolled-tab-example">
                 <Tab eventKey="past" title="Past Flights">
                 <h1>Click on Row to Review</h1>
                 <BootstrapTable class="table-hover"

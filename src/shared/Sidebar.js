@@ -221,8 +221,12 @@ function Sidebar(){
                             <br/>
                             <br/>
                             <label> Status </label>
-                            <br/>
-                            <input type="text" name="status" placeholder="Status" onChange={flightChangeHandler} autocomplete="chrome-off" required/>
+                            <br/> 
+                            <select id="changeStatus" name="status" onChange={flightChangeHandler}>
+                                <option></option>
+                                <option value="ontime">On Time</option>
+                                <option value="delayed">Delayed</option>
+                            </select>
                             <br/><br/>
                             <label>Airplane</label>
                             <select id="airplanes" name="airplane" onChange={flightChangeHandler}>
