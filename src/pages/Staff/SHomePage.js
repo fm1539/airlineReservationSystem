@@ -175,7 +175,7 @@ function SHomePage(){
     const changeButtonHandler = () => {
         console.log('status', status);
         axios.post('http://localhost:8000/api/staff/changeStatus', status).then(response => {
-            // window.location = '/staff'
+            window.location = '/staff'
         })   
     }
 

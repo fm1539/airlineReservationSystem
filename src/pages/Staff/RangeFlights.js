@@ -112,16 +112,20 @@ function RangeFlights(){
         if (cities.includes(searchInput.going)) obj["arrive_city"] = searchInput.going;
         else if (airports.includes(searchInput.going)) obj["arrive_airport_name"] = searchInput.going;
         axios.post('http://localhost:8000/api/staff/viewFlights', obj).then(response => {
-            let arr = []
-            response.data.results.forEach(obj => {
-                arr.push({
-                    ...obj,
-                    ['depart_date']: obj['depart_date'].slice(0, obj['depart_date'].indexOf('T')),
-                    ['arrive_date']: obj['arrive_date'].slice(0, obj['arrive_date'].indexOf('T'))
-                })
-            });
-            searchResultsHandler(arr)
+            if (response.data.status === "invalidempty") searchResultsHandler([])
+            else{
+                let arr = []
+                response.data.results.forEach(obj => {
+                    arr.push({
+                        ...obj,
+                        ['depart_date']: obj['depart_date'].slice(0, obj['depart_date'].indexOf('T')),
+                        ['arrive_date']: obj['arrive_date'].slice(0, obj['arrive_date'].indexOf('T'))
+                    })
+                });
+                searchResultsHandler(arr)
+            }
         })
+
     }
     
     let loggedIn = false

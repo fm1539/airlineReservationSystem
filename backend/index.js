@@ -49,6 +49,16 @@ connection2.configure({
 //     console.log(results);
 // })
 
+function customDate(d){
+    function pad(n){return n<10 ? '0'+n : n}
+    return d.getUTCFullYear()+'-'
+    + pad(d.getUTCMonth()+1)+'-'
+    + pad(d.getUTCDate())+'T'
+    + pad(d.getUTCHours())+':'
+    + pad(d.getUTCMinutes())+':'
+    + pad(d.getUTCSeconds())+'Z'
+}
+
 app.post('/api/customer/register', function(req, res){
     
     var arr = [req.body.email,req.body.name,md5(req.body.password),req.body.building_number,req.body.street,req.body.city,req.body.state,
@@ -156,8 +166,8 @@ app.get('/api/customer/getAllCities', function (req, res){
 })
 app.get('/api/customer/searchForFlights', function(req, res){
     const today = new Date();
-    const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    const yestDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+(today.getDate()-1);
+    let date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    let yestDate = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+(today.getDate()-1);
     const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
     console.log(req.query);
     const obj ={
@@ -175,16 +185,20 @@ app.get('/api/customer/searchForFlights', function(req, res){
         }
     }
     console.log(obj)
-
+    console.log(yestDate)
+    console.log(date)
     // console.log(obj.sourceAirport)    
     // console.log(obj.destinationAirport)   
     // console.log(obj.departureDate)   
-    // console.log(obj.returnDate)   
+    // console.log(obj.returnDate)  
+    // yestDate = "2021-05-04"   
+    // date = "2021-05-05" 
+    // seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
+    //This component for accounting for seating was removed from query
     connection.query(`
     SELECT *
     FROM (allFlights NATURAL JOIN Uses NATURAL join Airplane)
-    WHERE seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
-    and depart_date > ?
+    WHERE depart_date > ?
     and (flight_number,airline_name,depart_date,depart_time) 
     not in (SELECT flight_number,airline_name,depart_date,depart_time from allFlights where depart_date = ? and depart_time< ? ) 
     and depart_airport_name LIKE ? 
@@ -343,48 +357,47 @@ app.get('/api/customer/:custEmail/trackMySpending', function(req, res){
     }
 })
 
-app.post('/api/agent/register', function(req, res){
+app.post('/api/agent/register', async function(req, res){
     email = req.body.email
     password = md5(req.body.password)
 
-    connection.query("Select * from `Agent` Where 1", async function (err, results, fields){
-        if (err) console.log(err);
-        else{
-            agent_ID = results.length+1
-            try {
-            const account = await stripe.accounts.create({
-                type: 'express',
-                country: 'us',
-                email: email,
-                capabilities: {
-                  card_payments: {requested: true},
-                  transfers: {requested: true},
-                },
-              });
+    
+    try {
+    const account = await stripe.accounts.create({
+        type: 'express',
+        country: 'us',
+        email: email,
+        capabilities: {
+            card_payments: {requested: true},
+            transfers: {requested: true},
+        },
+        });
+        console.log('account', account)
 
-              const accountLink = await stripe.accountLinks.create({
-                account: account.id,
-                refresh_url: 'http://localhost:3000/agent',
-                return_url: 'http://localhost:3000/agent',
-                type: 'account_onboarding'
-              });
+        const accountLink = await stripe.accountLinks.create({
+        account: account.id,
+        refresh_url: 'http://localhost:3000/agent',
+        return_url: 'http://localhost:3000/agent',
+        type: 'account_onboarding'
+        });
+        console.log('accountLink', accountLink)
             
 
-            connection.query("INSERT INTO `Agent` (`email`, `password`, `agent_ID`) VALUES"+ `(?, ?, ?)`
-            , [email, password, account.id], function (err, results, fields){
-                if (err) {
-                    console.log(err);
-                    res.json({'status': 'invalid'})
-                }
-                else {
-                    console.log('accountLink', accountLink);
-                    res.json({'status': 'registered', 'accountLink': accountLink})
-                }
-            })
-        } catch(err){console.log(err);}
-        }
-    })
-});
+        connection.query("INSERT INTO `Agent` (`email`, `password`, `agent_ID`) VALUES"+ `(?, ?, ?)`
+        , [email, password, account.id], function (err, results, fields){
+            if (err) {
+                console.log(err);
+                res.json({'status': 'invalid'})
+            }
+            else {
+                console.log('accountLink', accountLink);
+                res.json({'status': 'registered', 'accountLink': accountLink})
+            }
+        })
+    }
+         catch(err){console.log(err);}
+        
+})
 
 app.post('/api/agent/login', function(req, res){
     email = req.body.email
@@ -446,11 +459,12 @@ app.get('/api/agent/searchForFlights', function(req, res){
             obj[key] = '%'
         }
     }
+    //seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
+    //accounting for seating not working^
     connection.query(`
     SELECT *
     FROM (allFlights NATURAL JOIN Uses NATURAL join Airplane)
-    WHERE seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
-    and depart_date > ?
+    WHERE depart_date > ?
     and (flight_number,airline_name,depart_date,depart_time) 
     not in (SELECT flight_number,airline_name,depart_date,depart_time from allFlights where depart_date = ? and depart_time< ? ) 
     and depart_airport_name LIKE ? 
@@ -719,15 +733,22 @@ app.post('/api/staff/viewFlights', function(req, res){
     let depart_city = req.body.depart_city
     let arrive_city = req.body.arrive_city
 
-    let today = new Date();
-    const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    today.setMonth(today.getMonth() + 1)
-    const dateIn1Month = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+
+    const today = new Date();
+
+
+    // let today = new Date();
+    // const dateToday = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    // today.setMonth(today.getMonth() + 1)
+    // const dateIn1Month = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     //console.log(dateToday, dateIn1Month, airline_name)
 
-    if (startDate == undefined){ //if we are not give a range, the default range is the next month
-        startDate = dateToday
-        endDate = dateIn1Month
+
+    if (startDate == "" || startDate == undefined){ //if we are not give a range, the default range is the next month
+        today.setMonth(today.getMonth())
+        startDate = customDate(today)
+        today.setMonth(today.getMonth()+1)
+        endDate = customDate(today)
     }
     if (depart_airport_name == undefined) depart_airport_name = "%"
     if (arrive_airport_name == undefined) arrive_airport_name = "%"
@@ -1058,6 +1079,19 @@ app.get('/api/staff/frequentCustomer/:airline_name', async function(req, res){
         res.json(finalObj)
     }
 })
+app.get('/api/staff/frequentCustomer2/:airline_name', function(req, res){
+    let airline_name = req.params.airline_name
+    connection.query(`
+    select customer_email, count(*) as ticketsBought from allPurchases where airline_name = ?
+    group by customer_email
+    order by count(*) desc
+    limit 1
+    `
+    ,[airline_name ], function (err, results, fields){
+        if (err) res.json({'status': 'invalid'})
+        else res.json(results)  
+    })
+})
 
 app.post('/api/staff/viewReports', function(req, res){
     let airline_name = req.query.airline_name
@@ -1211,6 +1245,6 @@ app.get('/api/staff/getAllAirports', function(req, res){
 //     response.render('home', {name})              //we are passing name into home.ejs, We are injecting information into the front end
 // })
 
-app.listen(8000, function(){            //designate which port you want to run
+app.listen(7000, function(){            //designate which port you want to run
     console.log("server on 8000");
 })

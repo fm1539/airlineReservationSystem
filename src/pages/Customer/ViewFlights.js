@@ -47,8 +47,12 @@ function ViewFlights(){
             const departDate = flight.depart_date.slice(0,flight.depart_date.indexOf('T'))
             const departYear = departDate.slice(0, departDate.indexOf('-'))
             const departMonth = departDate.slice(departDate.indexOf('-') + 1, departDate.indexOf('-') + 3)
-            const departDay = departDate.slice(departDate.indexOf('-') + 4, departDate.length-1)
-            if (parseInt(departYear) > today.getFullYear) futureArr.push(flight)
+            const departDay = departDate.slice(departDate.indexOf('-') + 4, departDate.length)
+            
+            if (parseInt(departYear) > today.getFullYear()) {
+                console.log('here');
+                futureArr.push(flight)
+            }
             else if(parseInt(departYear) < parseInt(today.getFullYear())) pastArr.push(flight)
             else{
                 if (parseInt(departMonth) < parseInt(today.getMonth())) {

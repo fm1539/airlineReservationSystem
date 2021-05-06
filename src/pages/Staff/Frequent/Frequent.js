@@ -21,6 +21,12 @@ function Frequent(){
     const [flightNumbers, setFlightNumbers] = useState([])
     const [customers, setCustomers] = useState([])
 
+    const [frequentCustomer, setFreqCus] = useState({})
+
+    const freqCusHandler = (obj) => {
+        setFreqCus(obj)
+    }
+
     const flightNumbersHandler = (arr) => {
         setFlightNumbers(arr)
     }
@@ -29,8 +35,9 @@ function Frequent(){
     }
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/staff/frequentCustomer/'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        axios.get('http://localhost:7000/api/staff/frequentCustomer/'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
             const obj = response.data
+            console.log('response', response.data);
             console.log('obj', obj);
             let arrF = []
             let arrC = []
@@ -41,6 +48,11 @@ function Frequent(){
             }
             flightNumbersHandler(arrF)
             customersHandler(arrC)
+        })
+        axios.get('http://localhost:7000/api/staff/frequentCustomer2/'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        console.log('hey')    
+        console.log(response);
+            freqCusHandler(response.data[0])
         })
     }, [])
 
@@ -66,6 +78,7 @@ function Frequent(){
         <div>
             <Sidebar />
             <div style={{marginLeft: '270px', paddingTop: '80px'}}>
+                <h1>{frequentCustomer.customer_email} is the most frequent customer with {frequentCustomer.ticketsBought}</h1>
                 <div className="flights-div">
                     <h1>Flights</h1>
                     <br /><br />
