@@ -31,22 +31,23 @@ function Comparison(){
 
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=customer&timeFlag=month&airline_name'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        console.log(JSON.parse(localStorage.getItem('staffObj')).airline_name)
+        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=customer&timeFlag=month&airline_name='+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
             console.log(response);
             revenueHandler('directMonth', response.data[0].revenue)
         })
 
-        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=customer&timeFlag=year&airline_name'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=customer&timeFlag=year&airline_name='+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
             console.log(response);
             revenueHandler('directYear', response.data[0].revenue)
         })
 
-        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=agent&timeFlag=month&airline_name'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=agent&timeFlag=month&airline_name='+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
             console.log(response);
             revenueHandler('indirectMonth', response.data[0].revenue)
         })
 
-        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=agent&timeFlag=year&airline_name'+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
+        axios.get('http://localhost:8000/api/staff/revenue?cusorAgent=agent&timeFlag=year&airline_name='+JSON.parse(localStorage.getItem('staffObj')).airline_name).then(response => {
             console.log(response);
             revenueHandler('indirectYear', response.data[0].revenue)
         })

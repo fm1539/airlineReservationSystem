@@ -195,11 +195,12 @@ app.get('/api/customer/searchForFlights', function(req, res){
     // date = "2021-05-05" 
     // seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
     //This component for accounting for seating was removed from query
+    //
     connection.query(`
     SELECT *
     FROM (allFlights NATURAL JOIN Uses NATURAL join Airplane)
-    WHERE depart_date > ?
-    and (flight_number,airline_name,depart_date,depart_time) 
+    WHERE depart_date > ? and 
+    (flight_number,airline_name,depart_date,depart_time) 
     not in (SELECT flight_number,airline_name,depart_date,depart_time from allFlights where depart_date = ? and depart_time< ? ) 
     and depart_airport_name LIKE ? 
     and arrive_airport_name LIKE ? 
@@ -461,11 +462,11 @@ app.get('/api/agent/searchForFlights', function(req, res){
     }
     //seats > (select count(*) from Ticket where airline_name = Ticket.airline_name and flight_number = Ticket.flight_number and depart_date = Ticket.depart_date and depart_time = Ticket.depart_time) 
     //accounting for seating not working^
+    //
     connection.query(`
     SELECT *
     FROM (allFlights NATURAL JOIN Uses NATURAL join Airplane)
-    WHERE depart_date > ?
-    and (flight_number,airline_name,depart_date,depart_time) 
+    WHERE depart_date > ? and (flight_number,airline_name,depart_date,depart_time) 
     not in (SELECT flight_number,airline_name,depart_date,depart_time from allFlights where depart_date = ? and depart_time< ? ) 
     and depart_airport_name LIKE ? 
     and arrive_airport_name LIKE ? 
@@ -473,7 +474,7 @@ app.get('/api/agent/searchForFlights', function(req, res){
     and arrive_date LIKE  ?
     and depart_city LIKE ?
     and arrive_city LIKE ?
-    `,[yestDate, date, time, obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"],obj["sourceCity"],obj["destinationCity"]] ,function (err, results, fields){
+    `,[ yestDate, date, time, obj["sourceAirport"],obj["destinationAirport"],obj["departureDate"],obj["returnDate"],obj["sourceCity"],obj["destinationCity"]] ,function (err, results, fields){
         if (err) res.json({'status': 'invaliderr'})
         if (results.length){ //non empty result
             res.json({
@@ -1159,14 +1160,21 @@ app.get('/api/staff/revenue', function(req, res){
         })
     }
     else{
+        console.log("startDate",startDate)
+        console.log("endDate",endDate)
+        console.log("ariline",airline_name)
         connection.query(`
         SELECT sum(base_price) as revenue 
         from Customer_Purchases NATURAL join Flight 
-        where  depart_date > ? and depart_date < ? and airline_name = ?
+        where  depart_date > "2021-04-06" and depart_date < "2021-05-06" and airline_name = ?
         `
-        ,[ startDate,endDate, airline_name], function (err, results, fields){
+        ,[  airline_name], function (err, results, fields){
             if (err) res.json({'status': 'invalid'})
-            else res.json(results)  
+            else{ 
+                console.log(results)
+                res.json(results)  
+
+            }
         })
     }
 })
@@ -1245,6 +1253,6 @@ app.get('/api/staff/getAllAirports', function(req, res){
 //     response.render('home', {name})              //we are passing name into home.ejs, We are injecting information into the front end
 // })
 
-app.listen(7000, function(){            //designate which port you want to run
+app.listen(8000, function(){            //designate which port you want to run
     console.log("server on 8000");
 })
