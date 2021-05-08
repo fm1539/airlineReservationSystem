@@ -22,13 +22,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 var mysql = require('mysql')
 
-var connection = mysql.createConnection({
+var connection = mysql.createPool({
     host     : 'bhvnh1znohtkeluykr2r-mysql.services.clever-cloud.com',
     user     : 'ubsbqvfcyngpgwfb',
     password : 'JGwD07olU9zwGKAWnliE',
-    database : 'bhvnh1znohtkeluykr2r'
+    database : 'bhvnh1znohtkeluykr2r',
+    connectionLimit: 10
   });
-  connection.connect();
 
 var connection2 = require('mysql2-promise')();
 
@@ -570,8 +570,13 @@ app.post('/api/agent/purchaseTickets', async (req, res) => {
                                         + `(?, ?, ?, ?, ?, ?,?)`
                                         , [agent_email, customer_email, ticketID,airline_name,flight_number,depart_date,depart_time], async function (err, results, fields){
                                             console.log("~~~~~~~~~~")
-                                            console.log(agent_email);
-                                            console.log(customer_email)
+                                            console.log("agent_email",agent_email);
+                                            console.log("customer_email",customer_email)
+                                            console.log("ticketID",ticketID);
+                                            console.log("airline_name",airline_name)
+                                            console.log("flight_number",flight_number);
+                                            console.log("depart_date",depart_date)
+                                            console.log("depart_time",depart_time);
                                             if (err) {
                                                 console.log(err);
                                                 res.json({'status': 'invaliderr'})
@@ -1143,12 +1148,17 @@ app.get('/api/staff/revenue', function(req, res){
     if (timeFlag == "month"){
         startDate = date1MonthAgo
         endDate = dateToday
+        console.log("entered month flag")
     }
     if (timeFlag == "year"){
         startDate = date1YearAgo
         endDate = dateToday
+        //console.log("entered year flag")
     }
     if (cusOrAgent == "agent"){
+        console.log("startDate", startDate)
+        console.log("endDate", endDate)
+        console.log("airline_name", airline_name)
         connection.query(`
         SELECT sum(base_price) as revenue 
         from Agent_Purchases NATURAL join Flight 
@@ -1156,22 +1166,25 @@ app.get('/api/staff/revenue', function(req, res){
         `
         ,[ startDate,endDate, airline_name], function (err, results, fields){
             if (err) res.json({'status': 'invalid'})
-            else res.json(results)  
+            else {
+                console.log(results)
+                res.json(results)
+            }
         })
     }
     else{
-        console.log("startDate",startDate)
-        console.log("endDate",endDate)
-        console.log("ariline",airline_name)
+        // console.log("startDate",startDate)
+        // console.log("endDate",endDate)
+        // console.log("ariline",airline_name)
         connection.query(`
         SELECT sum(base_price) as revenue 
         from Customer_Purchases NATURAL join Flight 
-        where  depart_date > "2021-04-06" and depart_date < "2021-05-06" and airline_name = ?
+        where  depart_date > ? and depart_date < ? and airline_name = ?
         `
-        ,[  airline_name], function (err, results, fields){
+        ,[startDate,endDate,  airline_name], function (err, results, fields){
             if (err) res.json({'status': 'invalid'})
             else{ 
-                console.log(results)
+
                 res.json(results)  
 
             }
